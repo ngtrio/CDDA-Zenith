@@ -91,8 +91,19 @@ func (game *Game) preLoadMod() error {
 
 func (game *Game) postLoadMod() {
 	// TODO
-	log.Info(game.Mods["dda"].TempData["mon_zombie_soldier"])
-	log.Info(game.Mods["dda"].TempData["mon_zombie_soldier_acid_2"])
+
+	for _, mod := range game.Mods {
+		for id, jsons := range mod.TempData {
+			for _, json := range jsons {
+				if !isAbstract(json) {
+					mod.Data[id] = append(mod.Data[id], json.String())
+				}
+			}
+		}
+	}
+
+	log.Info(game.Mods["dda"].Data["mon_zombie_soldier"])
+	log.Info(game.Mods["dda"].Data["mon_zombie_soldier_acid_2"])
 }
 
 func (game *Game) doLoadMod(mod *data.Mod) {
@@ -119,6 +130,10 @@ func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
 			continue
 		}
 
+		if !isInAllowList(json) {
+			continue
+		}
+
 		tar := mod.TempData[id]
 		mod.TempData[id] = append(tar, json)
 	}
@@ -141,15 +156,11 @@ func isAbstract(json *gjson.Result) bool {
 }
 
 func getId(json *gjson.Result) string {
-	id := json.Get("id")
-	if id.Exists() {
-		return id.String()
+	id := jsonutil.GetString(json, "id")
+	if id == "" {
+		id = jsonutil.GetString(json, "abstract")
 	}
-	ab := json.Get("abstract")
-	if ab.Exists() {
-		return ab.String()
-	}
-	return ""
+	return id
 }
 
 func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
@@ -178,14 +189,14 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 					case "extend":
 						v.ForEach(func(ck, cv gjson.Result) bool {
 							vInPar := par.Get(ck.String())
-							var res []string
+							var res []interface{}
 							if vInPar.Exists() {
 								for _, elem := range vInPar.Array() {
-									res = append(res, elem.String())
+									res = append(res, elem.Value())
 								}
 							}
 							for _, elem := range cv.Array() {
-								res = append(res, elem.String())
+								res = append(res, elem.Value())
 							}
 
 							jsonutil.Set(&jsonStr, ck.String(), res)
@@ -221,7 +232,7 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 					case "copy-from":
 						// discard
 					default:
-						jsonutil.Set(&jsonStr, k.String(), v.String())
+						jsonutil.Set(&jsonStr, k.String(), v.Value())
 					}
 
 					return true
@@ -284,4 +295,12 @@ func inheritProportional(jsonStr *string, par *gjson.Result, json *gjson.Result,
 		}
 		return true
 	})
+}
+
+func isInAllowList(json *gjson.Result) bool {
+
+	type_ := jsonutil.GetString(json, "type")
+
+	allowList := map[string]bool{"MONSTER": true}
+	return allowList[type_]
 }
