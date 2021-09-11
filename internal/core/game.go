@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"strings"
 	"zenith/internal/data"
+	"zenith/internal/i18n"
 	"zenith/internal/loader"
-	i18nutil "zenith/internal/util"
 	"zenith/pkg/fileutil"
 	"zenith/pkg/jsonutil"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
@@ -19,10 +20,10 @@ type Game struct {
 	Mods    map[string]*data.Mod
 	ModPath string
 	Lang    string
+	Mo      *gotext.Mo
 }
 
 func (game *Game) Load(targets map[string]bool) {
-
 	if err := game.preLoad(); err != nil {
 		log.Fatal(err)
 	}
@@ -94,14 +95,14 @@ func (game *Game) preLoad() error {
 
 func (game *Game) postLoad() {
 
-	mo := loader.LoadLang(game.Lang)
+	game.Mo = loader.LoadLang(game.Lang)
 
 	for _, mod := range game.Mods {
 		for id, jsons := range mod.TempData {
 			for _, json := range jsons {
 				if !isAbstract(json) {
 					jsonStr := json.String()
-					name := i18nutil.Tran("name", json, mo)
+					name := i18n.Tran("name", json, game.Mo)
 					mod.IdMap[id] = append(mod.IdMap[id], jsonStr)
 					mod.NameMap[name] = append(mod.NameMap[name], jsonStr)
 				}

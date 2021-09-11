@@ -1,4 +1,4 @@
-package i18nutil
+package i18n
 
 import (
 	"zenith/pkg/jsonutil"
