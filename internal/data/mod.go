@@ -8,13 +8,14 @@ type Mod struct {
 	Description  string
 	Path         string
 	Dependencies []string
-	Data         map[string][]string
+	IdMap        map[string][]string
+	NameMap      map[string][]string
 	TempData     map[string][]*gjson.Result
 	Loaded       bool
 }
 
 func (mod *Mod) GetById(id string) []string {
-	if v, ok := mod.Data[id]; ok {
+	if v, ok := mod.IdMap[id]; ok {
 		return v
 	}
 	return nil

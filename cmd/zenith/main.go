@@ -12,7 +12,9 @@ import (
 )
 
 func main() {
-
+	// mo := loader.LoadLang("zh_CN")
+	// str := mo.Get("caustic soldier zombie")
+	// log.Info(str)
 }
 
 func init() {
@@ -29,7 +31,11 @@ func init() {
 
 	game := core.Game{
 		Mods:    make(map[string]*data.Mod),
-		ModPath: "data/mods",
+		ModPath: "cataclysmdda-0.F/data/mods",
+		Lang:    "zh_CN",
 	}
-	game.LoadMod(map[string]bool{"dda": true})
+	game.Load(map[string]bool{"dda": true})
+
+	log.Info(game.GetById("mon_zombie_soldier_acid_2"))
+	log.Info(game.GetByName("酸液士兵丧尸"))
 }

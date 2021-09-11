@@ -14,10 +14,23 @@ func Set(json *string, path string, value interface{}) {
 	}
 }
 
-func GetString(json *gjson.Result, field string) string {
-	f := json.Get(field)
-	if f.Exists() {
-		return f.String()
+func GetString(field string, json *gjson.Result) (string, bool) {
+	if res, has := GetField(field, json); has {
+		return res.String(), has
+	} else {
+		return "", false
 	}
-	return ""
+}
+
+func GetField(field string, json *gjson.Result) (*gjson.Result, bool) {
+	res := json.Get(field)
+	if res.Exists() {
+		return &res, true
+	} else {
+		return nil, false
+	}
+}
+
+func IsString(json *gjson.Result) bool {
+	return json.Type == gjson.String
 }

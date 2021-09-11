@@ -6,6 +6,7 @@ import (
 	"strings"
 	"zenith/internal/data"
 	"zenith/internal/loader"
+	i18nutil "zenith/internal/util"
 	"zenith/pkg/fileutil"
 	"zenith/pkg/jsonutil"
 
@@ -17,11 +18,12 @@ type Game struct {
 	Version string
 	Mods    map[string]*data.Mod
 	ModPath string
+	Lang    string
 }
 
-func (game *Game) LoadMod(targets map[string]bool) {
+func (game *Game) Load(targets map[string]bool) {
 
-	if err := game.preLoadMod(); err != nil {
+	if err := game.preLoad(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -35,10 +37,10 @@ func (game *Game) LoadMod(targets map[string]bool) {
 		}
 	}
 
-	game.postLoadMod()
+	game.postLoad()
 }
 
-func (game *Game) preLoadMod() error {
+func (game *Game) preLoad() error {
 
 	if _, dirs, err := fileutil.Ls(game.ModPath); err != nil {
 		return err
@@ -74,7 +76,8 @@ func (game *Game) preLoadMod() error {
 							Description:  modInfo.Get("description").String(),
 							Path:         path,
 							Dependencies: dependencies,
-							Data:         make(map[string][]string),
+							IdMap:        make(map[string][]string),
+							NameMap:      make(map[string][]string),
 							TempData:     make(map[string][]*gjson.Result),
 							Loaded:       false,
 						}
@@ -89,21 +92,27 @@ func (game *Game) preLoadMod() error {
 	return nil
 }
 
-func (game *Game) postLoadMod() {
-	// TODO
+func (game *Game) postLoad() {
+
+	mo := loader.LoadLang(game.Lang)
 
 	for _, mod := range game.Mods {
 		for id, jsons := range mod.TempData {
 			for _, json := range jsons {
 				if !isAbstract(json) {
-					mod.Data[id] = append(mod.Data[id], json.String())
+					jsonStr := json.String()
+					name := i18nutil.Tran("name", json, mo)
+					mod.IdMap[id] = append(mod.IdMap[id], jsonStr)
+					mod.NameMap[name] = append(mod.NameMap[name], jsonStr)
 				}
 			}
 		}
 	}
 
-	log.Info(game.Mods["dda"].Data["mon_zombie_soldier"])
-	log.Info(game.Mods["dda"].Data["mon_zombie_soldier_acid_2"])
+	// modNum := len(game.Mods)
+	for _, mod := range game.Mods {
+		log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
+	}
 }
 
 func (game *Game) doLoadMod(mod *data.Mod) {
@@ -119,14 +128,13 @@ func (game *Game) doLoadMod(mod *data.Mod) {
 	game.processModData(mod, jsons)
 
 	mod.Loaded = true
-	log.Printf("[MOD]: %s is loaded", mod.ID)
 }
 
 func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
 	for _, json := range jsons {
 		id := getId(json)
 		if id == "" {
-			log.Debug("id not found, json: %s", json.String())
+			log.Debugf("id not found, json: %s", json.String())
 			continue
 		}
 
@@ -147,22 +155,6 @@ func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
 	}
 }
 
-func needInherit(json *gjson.Result) bool {
-	return json.Get("copy-from").Exists()
-}
-
-func isAbstract(json *gjson.Result) bool {
-	return json.Get("abstract").Exists()
-}
-
-func getId(json *gjson.Result) string {
-	id := jsonutil.GetString(json, "id")
-	if id == "" {
-		id = jsonutil.GetString(json, "abstract")
-	}
-	return id
-}
-
 func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 	cf := json.Get("copy-from")
 	if !cf.Exists() {
@@ -173,7 +165,7 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 	flag := false
 	if pars := mod.TempData[parId]; pars != nil {
 		for _, par := range pars {
-			if par.Get("type").String() == json.Get("type").String() {
+			if par != json && par.Get("type").String() == json.Get("type").String() {
 				if needInherit(par) {
 					game.inherit(mod, par)
 				}
@@ -259,6 +251,26 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 	return true
 }
 
+func needInherit(json *gjson.Result) bool {
+	return json.Get("copy-from").Exists()
+}
+
+func isAbstract(json *gjson.Result) bool {
+	return json.Get("abstract").Exists()
+}
+
+func getId(json *gjson.Result) string {
+	var id string
+	var has bool
+	if id, has = jsonutil.GetString("id", json); has {
+		return id
+	}
+	if id, has = jsonutil.GetString("abstract", json); has {
+		return id
+	}
+	return ""
+}
+
 func inheritRelative(jsonStr *string, par *gjson.Result, json *gjson.Result, path string) {
 	json.Get(path).ForEach(func(k, v gjson.Result) bool {
 
@@ -299,8 +311,46 @@ func inheritProportional(jsonStr *string, par *gjson.Result, json *gjson.Result,
 
 func isInAllowList(json *gjson.Result) bool {
 
-	type_ := jsonutil.GetString(json, "type")
+	type_, _ := jsonutil.GetString("type", json)
 
 	allowList := map[string]bool{"MONSTER": true}
 	return allowList[type_]
+}
+
+func (game *Game) GetById(id string) []string {
+	return game.GetByModAndId("", id)
+}
+
+func (game *Game) GetByModAndId(mod, id string) []string {
+	if mod == "" {
+		res := make([]string, 0)
+		for _, mod := range game.Mods {
+			if len(mod.IdMap[id]) > 0 {
+				res = append(res, mod.IdMap[id]...)
+			}
+		}
+		return res
+	} else {
+		mod := game.Mods[mod]
+		return mod.IdMap[id]
+	}
+}
+
+func (game *Game) GetByName(name string) []string {
+	return game.GetByModAndName("", name)
+}
+
+func (game *Game) GetByModAndName(mod, name string) []string {
+	if mod == "" {
+		res := make([]string, 0)
+		for _, mod := range game.Mods {
+			if len(mod.NameMap[name]) > 0 {
+				res = append(res, mod.NameMap[name]...)
+			}
+		}
+		return res
+	} else {
+		mod := game.Mods[mod]
+		return mod.NameMap[name]
+	}
 }
