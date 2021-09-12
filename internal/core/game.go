@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"zenith/internal/data"
-	"zenith/internal/i18n"
 	"zenith/internal/loader"
 	"zenith/pkg/fileutil"
 	"zenith/pkg/jsonutil"
@@ -31,10 +30,10 @@ func (game *Game) Load(targets map[string]bool) {
 	for _, mod := range game.Mods {
 		if len(targets) > 0 {
 			if _, ok := targets[mod.ID]; ok && !mod.Loaded {
-				game.doLoadMod(mod)
+				game.doLoad(mod)
 			}
 		} else {
-			game.doLoadMod(mod)
+			game.doLoad(mod)
 		}
 	}
 
@@ -77,8 +76,8 @@ func (game *Game) preLoad() error {
 							Description:  modInfo.Get("description").String(),
 							Path:         path,
 							Dependencies: dependencies,
-							IdMap:        make(map[string][]string),
-							NameMap:      make(map[string][]string),
+							IdMap:        make(map[string][]*string),
+							NameMap:      make(map[string][]*string),
 							TempData:     make(map[string][]*gjson.Result),
 							Loaded:       false,
 						}
@@ -93,35 +92,12 @@ func (game *Game) preLoad() error {
 	return nil
 }
 
-func (game *Game) postLoad() {
-
-	game.Mo = loader.LoadLang(game.Lang)
-
-	for _, mod := range game.Mods {
-		for id, jsons := range mod.TempData {
-			for _, json := range jsons {
-				if !isAbstract(json) {
-					jsonStr := json.String()
-					name := i18n.Tran("name", json, game.Mo)
-					mod.IdMap[id] = append(mod.IdMap[id], jsonStr)
-					mod.NameMap[name] = append(mod.NameMap[name], jsonStr)
-				}
-			}
-		}
-	}
-
-	// modNum := len(game.Mods)
-	for _, mod := range game.Mods {
-		log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
-	}
-}
-
-func (game *Game) doLoadMod(mod *data.Mod) {
+func (game *Game) doLoad(mod *data.Mod) {
 	dependencies := mod.Dependencies
 	for _, dependency := range dependencies {
 		m := game.Mods[dependency]
 		if !m.Loaded {
-			game.doLoadMod(m)
+			game.doLoad(m)
 		}
 	}
 	path := mod.Path
@@ -129,6 +105,20 @@ func (game *Game) doLoadMod(mod *data.Mod) {
 	game.processModData(mod, jsons)
 
 	mod.Loaded = true
+}
+
+func (game *Game) postLoad() {
+
+	game.Mo = loader.LoadLang(game.Lang)
+
+	for _, mod := range game.Mods {
+		mod.Finalize(game.Mo)
+	}
+
+	// modNum := len(game.Mods)
+	for _, mod := range game.Mods {
+		log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
+	}
 }
 
 func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
@@ -149,7 +139,7 @@ func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
 
 	for _, tempJsonList := range mod.TempData {
 		for _, tempJson := range tempJsonList {
-			if needInherit(tempJson) {
+			if loader.NeedInherit(tempJson) {
 				game.inherit(mod, tempJson)
 			}
 		}
@@ -167,7 +157,7 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 	if pars := mod.TempData[parId]; pars != nil {
 		for _, par := range pars {
 			if par != json && par.Get("type").String() == json.Get("type").String() {
-				if needInherit(par) {
+				if loader.NeedInherit(par) {
 					game.inherit(mod, par)
 				}
 
@@ -237,7 +227,6 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 				break
 			}
 		}
-
 	}
 
 	if !flag {
@@ -250,14 +239,6 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 	}
 
 	return true
-}
-
-func needInherit(json *gjson.Result) bool {
-	return json.Get("copy-from").Exists()
-}
-
-func isAbstract(json *gjson.Result) bool {
-	return json.Get("abstract").Exists()
 }
 
 func getId(json *gjson.Result) string {
@@ -326,14 +307,12 @@ func (game *Game) GetByModAndId(mod, id string) []string {
 	if mod == "" {
 		res := make([]string, 0)
 		for _, mod := range game.Mods {
-			if len(mod.IdMap[id]) > 0 {
-				res = append(res, mod.IdMap[id]...)
-			}
+			res = append(res, mod.GetById(id)...)
 		}
 		return res
 	} else {
 		mod := game.Mods[mod]
-		return mod.IdMap[id]
+		return mod.GetById(id)
 	}
 }
 
@@ -345,13 +324,11 @@ func (game *Game) GetByModAndName(mod, name string) []string {
 	if mod == "" {
 		res := make([]string, 0)
 		for _, mod := range game.Mods {
-			if len(mod.NameMap[name]) > 0 {
-				res = append(res, mod.NameMap[name]...)
-			}
+			res = append(res, mod.GetByName(name)...)
 		}
 		return res
 	} else {
 		mod := game.Mods[mod]
-		return mod.NameMap[name]
+		return mod.GetByName(name)
 	}
 }

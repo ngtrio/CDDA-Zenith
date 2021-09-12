@@ -70,3 +70,11 @@ func sortPaths(paths []string) {
 		return aSplits[len(aSplits)-1] <= bSplits[len(bSplits)-1]
 	})
 }
+
+func NeedInherit(json *gjson.Result) bool {
+	return json.Get("copy-from").Exists()
+}
+
+func IsAbstract(json *gjson.Result) bool {
+	return json.Get("abstract").Exists()
+}
