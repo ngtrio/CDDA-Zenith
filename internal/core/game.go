@@ -244,10 +244,10 @@ func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
 func getId(json *gjson.Result) string {
 	var id string
 	var has bool
-	if id, has = jsonutil.GetString("id", json); has {
+	if id, has = jsonutil.GetString("id", json, ""); has {
 		return id
 	}
-	if id, has = jsonutil.GetString("abstract", json); has {
+	if id, has = jsonutil.GetString("abstract", json, ""); has {
 		return id
 	}
 	return ""
@@ -293,7 +293,7 @@ func inheritProportional(jsonStr *string, par *gjson.Result, json *gjson.Result,
 
 func isInAllowList(json *gjson.Result) bool {
 
-	type_, _ := jsonutil.GetString("type", json)
+	type_, _ := jsonutil.GetString("type", json, "")
 
 	allowList := map[string]bool{"MONSTER": true}
 	return allowList[type_]

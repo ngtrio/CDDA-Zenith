@@ -18,10 +18,10 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 		} else {
 			var str, strSp, ctxt, strPl string
 			var has bool
-			ctxt, _ = jsonutil.GetString("ctxt", raw)
-			if str, has = jsonutil.GetString("str", raw); has {
-				strPl, _ = jsonutil.GetString("str_pl", raw)
-			} else if strSp, has = jsonutil.GetString("str_sp", raw); has {
+			ctxt, _ = jsonutil.GetString("ctxt", raw, "")
+			if str, has = jsonutil.GetString("str", raw, ""); has {
+				strPl, _ = jsonutil.GetString("str_pl", raw, "")
+			} else if strSp, has = jsonutil.GetString("str_sp", raw, ""); has {
 				str = strSp
 				strPl = strSp
 			} else {
