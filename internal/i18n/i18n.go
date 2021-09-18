@@ -45,3 +45,7 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 		return res
 	}
 }
+
+func TranUI(raw string, po *gotext.Po) string {
+	return po.Get(raw)
+}

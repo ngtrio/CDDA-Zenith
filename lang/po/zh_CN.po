@@ -1,0 +1,407 @@
+msgid "Type"
+msgstr "类型"
+
+msgid "Name"
+msgstr "名字"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Body type"
+msgstr "体型"
+
+msgid "Species"
+msgstr "物种"
+
+msgid "Volume"
+msgstr "体积"
+
+msgid "Weight"
+msgstr "重量"
+
+msgid "HP"
+msgstr "血量"
+
+msgid "Speed"
+msgstr "速度"
+
+msgid "Material"
+msgstr "材质"
+ 
+msgid "Aggression"
+msgstr "侵略性"
+
+msgid "Morale"
+msgstr "斗志"
+
+msgid "Attack"
+msgstr "攻击"
+
+msgid "Armor bash"
+msgstr "饨击防护"
+
+msgid "Armor cut"
+msgstr "斩击防护"
+
+msgid "Armor bullet"
+msgstr "子弹防护"
+
+msgid "Armor stab"
+msgstr "刺击防护"
+
+msgid "Armor acid"
+msgstr "酸性防护"
+
+msgid "Armor fire"
+msgstr "火焰防护"
+
+msgid "Vision day"
+msgstr "日视"
+
+msgid "Vision night"
+msgstr "夜视"
+
+msgid "It can see you (and will run/follow)"
+msgstr "它拥有视觉"
+
+msgid "It can hear you"
+msgstr "它拥有听觉"
+
+msgid "Pursues sounds more than most monsters"
+msgstr ""
+
+msgid "It can smell you"
+msgstr "它拥有嗅觉"
+
+msgid "Keen sense of smell"
+msgstr ""
+
+msgid "Stumbles in its movement"
+msgstr "它容易在行动中跌倒"
+
+msgid "Warm blooded"
+msgstr "它属于温血动物"
+
+msgid "Is a nemesis monster"
+msgstr ""
+
+msgid "Headshots not allowed!"
+msgstr ""
+
+msgid "It's one size smaller for ranged attacks, no less then creature_size::tiny"
+msgstr ""
+
+msgid "Its attacks may grab us!"
+msgstr ""
+
+msgid "Bashes down doors"
+msgstr "它可以破坏门"
+
+msgid "Bashes down walls and more"
+msgstr "它可以破坏墙和其他地形"
+
+msgid "Tunnels through just about anything"
+msgstr ""
+
+msgid "Poisonous to eat"
+msgstr "它的肉吃起来是有毒的"
+
+msgid "Attack may poison the player"
+msgstr ""
+
+msgid "Attack may SEVERELY poison the player"
+msgstr ""
+
+msgid "Attack may paralyze the player with venom"
+msgstr ""
+
+msgid "Doesn't destroy webs"
+msgstr ""
+
+msgid "Digs through the ground"
+msgstr ""
+
+msgid "Can dig and walk"
+msgstr ""
+
+msgid "Can fly (over water, etc)"
+msgstr ""
+
+msgid "Confined to water"
+msgstr ""
+
+msgid "Treats water as 50 movement point terrain"
+msgstr ""
+
+msgid "Attacks other monsters"
+msgstr ""
+
+msgid "Is an \"animal\" for purposes of the Animal Empath trait"
+msgstr ""
+
+msgid "Absorbs physical damage to a great degree"
+msgstr ""
+
+msgid "Dies in full sunlight"
+msgstr ""
+
+msgid "Shocks unarmed attackers"
+msgstr ""
+
+msgid "Immune to acid"
+msgstr ""
+
+msgid "Leaves a trail of acid"
+msgstr ""
+
+msgid "Leaves an intermittent trail of acid"
+msgstr ""
+
+msgid "Immune to fire"
+msgstr ""
+
+msgid "Ignores the effect of sludge trails"
+msgstr ""
+
+msgid "Causes monster to leave a sludge trap trail when moving"
+msgstr ""
+
+msgid "Causes monster to leave a low intensity, 1 tile sludge pool approximately every other tile when moving"
+msgstr ""
+
+msgid "Immune to cold damage"
+msgstr ""
+
+msgid "Burns stuff and is immune to fire"
+msgstr ""
+
+msgid "When it dies, local populations start to die off too"
+msgstr ""
+
+msgid "e.g. a robot; affected by EMP blasts, and other stuff"
+msgstr ""
+
+msgid "May produce fur when butchered"
+msgstr ""
+
+msgid "May produce leather when butchered"
+msgstr ""
+
+msgid "May produce wool when butchered"
+msgstr ""
+
+msgid "May produce bones and sinews when butchered; if combined with POISON flag, tainted bones, if combined with HUMAN, human bones"
+msgstr ""
+
+msgid "May produce fat when butchered; if combined with POISON flag, tainted fat"
+msgstr ""
+
+msgid "Despawns when a nearby console is properly hacked"
+msgstr ""
+
+msgid "Doesn't move (e.g. turrets)"
+msgstr ""
+
+msgid "Despawns when a science ID card is used on a nearby console"
+msgstr ""
+
+msgid "A rideable mech that is immobile until ridden."
+msgstr ""
+
+msgid "A rideable mech that was designed for military work."
+msgstr ""
+
+msgid "This mech gives you IR night-vision."
+msgstr ""
+
+msgid "This mech gives you thorough protection."
+msgstr ""
+
+msgid "Flee for several turns after a melee attack"
+msgstr ""
+
+msgid "You feel guilty for killing it"
+msgstr ""
+
+msgid "You can pay this bot to be your friend for a time"
+msgstr ""
+
+msgid "It's a live human, as long as it's alive"
+msgstr ""
+
+msgid "Creature can't drown and is unharmed by gas, smoke, or poison"
+msgstr "它不会被淹死，也不会被气体、烟雾或毒药伤害"
+
+msgid "Monster catches fire, burns, and spreads fire to nearby objects"
+msgstr ""
+
+msgid "Monster corpse will revive after a short period of time"
+msgstr "它的尸体将在短时间内复活"
+
+msgid "May produce chitin when butchered"
+msgstr ""
+
+msgid "Obsolete flag labeling \"nuisance\" or \"scenery\" monsters, now used to prevent loading the same."
+msgstr ""
+
+msgid "Creature won't leave gibs / meat chunks when killed with huge damage."
+msgstr ""
+
+msgid "Creature is a larva. Currently used for gib and blood handling."
+msgstr ""
+
+msgid "Forces monster to bleed hemolymph."
+msgstr ""
+
+msgid "Makes monster bleed acid. Fun stuff! Does not automatically dissolve in a pool of acid on death."
+msgstr ""
+
+msgid "Makes monster bleed bile."
+msgstr ""
+
+msgid "Consumes objects it moves over which gives bonus hp."
+msgstr ""
+
+msgid "Consumes objects it moves over which gives bonus hp. If it gets enough bonus HP, it spawns a copy of itself."
+msgstr ""
+
+msgid "May produce a common CBM a power CBM when butchered."
+msgstr ""
+
+msgid "May produce a power CBM when butchered, independent of MF_CBM_wev."
+msgstr ""
+
+msgid "May produce a bionic from bionics_sci when butchered."
+msgstr ""
+
+msgid "May produce a bionic from bionics_op when butchered, and the power storage is mk 2."
+msgstr ""
+
+msgid "May produce a bionic from bionics_tech when butchered."
+msgstr ""
+
+msgid "May produce a bionic from bionics_subs when butchered."
+msgstr ""
+
+msgid "Any clothing it drops will be filthy."
+msgstr "它掉落的衣物都将是被污染的"
+
+msgid "It is fishable."
+msgstr ""
+
+msgid "Monsters that can pile up against obstacles and add their strength together to break them."
+msgstr "该类生物能合力摧毁障碍物"
+
+msgid "Monsters that like to group together and form loose packs"
+msgstr "该类生物喜欢聚集在一起，形成松散的群体"
+
+msgid "Monsters that are more courageous when near friends"
+msgstr ""
+
+msgid "Monster contain's its ammo inside itself, no need to load on launch. Prevents ammo from being dropped on disable."
+msgstr ""
+
+msgid "Monsters that can climb certain terrain and furniture"
+msgstr ""
+
+msgid "Monsters that will never use melee attack, useful for having them use grab without attacking the player"
+msgstr ""
+
+msgid "Attempts to keep a short distance (tracking_distance) from its current target.  The default tracking distance is 8 tiles"
+msgstr ""
+
+msgid "Monsters that can push creatures out of their way"
+msgstr "它会将拦路的生物推开"
+
+msgid "Monsters that can push vehicles out of their way"
+msgstr "它会将拦路的车辆推开"
+
+msgid "Monsters that are invisible in poor light conditions"
+msgstr ""
+
+msgid "When revived, this monster has full hitpoints and speed"
+msgstr ""
+
+msgid "This monster can't be revived by necros. It will still rise on its own."
+msgstr ""
+
+msgid "This monster will path around some dangers instead of through them."
+msgstr ""
+
+msgid "This monster will path around most dangers instead of through them."
+msgstr ""
+
+msgid "This monster will path around heat-related dangers instead of through them."
+msgstr ""
+
+msgid "This monster will path around cliffs instead of off of them."
+msgstr ""
+
+msgid "This monster will prioritize targets depending on their danger levels"
+msgstr ""
+
+msgid "Monsters that will NOT appear when player's producing hallucinations"
+msgstr ""
+
+msgid "This monster can be played with if it's a pet."
+msgstr ""
+
+msgid "This monster can be mounted and ridden when tamed."
+msgstr ""
+
+msgid "This monster can be harnessed when tamed."
+msgstr ""
+
+msgid "This monster will respond to the dog whistle."
+msgstr ""
+
+msgid "This monster is milkable."
+msgstr ""
+
+msgid "This monster is shearable."
+msgstr ""
+
+msgid "This monster doesn't breed, even though it has breed data"
+msgstr ""
+
+msgid "This monster can't be damaged by fungal spores and can't be fungalized either."
+msgstr ""
+
+msgid "This monster won't follow the player automatically when tamed."
+msgstr ""
+
+msgid "This monster occasionally drips napalm on move"
+msgstr ""
+
+msgid "This monster occasionally drips gasoline on move"
+msgstr ""
+
+msgid "This monster is surrounded by an electrical field that ignites flammable liquids near it"
+msgstr ""
+
+msgid "This monster makes move noises as if ~2 sizes louder, even if flying."
+msgstr ""
+
+msgid "This monster can open doors."
+msgstr ""
+
+msgid "This monster is immune to the stun effect"
+msgstr ""
+
+msgid "This monster drops ammo. Should not be set for monsters that use pseudo ammo."
+msgstr ""
+
+msgid "This monster is immune to insecticide, even though it's made of bug flesh"
+msgstr ""
+
+msgid "This monster has any sort of ranged attack"
+msgstr ""
+
+msgid "This monster is hard to spot, even in broad daylight"
+msgstr ""
+
+msgid "This monster is hard to spot if it is underwater, especially if you aren't"
+msgstr ""
+
+msgid "Sets the length of the flags - obviously must be LAST"
+msgstr ""
