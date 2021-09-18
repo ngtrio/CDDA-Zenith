@@ -30,11 +30,19 @@ func GetInt(field string, json *gjson.Result, df int64) (int64, bool) {
 	}
 }
 
-func GetString(field string, json *gjson.Result, df string) (string, bool) {
+func GetFloat(field string, json *gjson.Result, df float64) (float64, bool) {
+	if res, has := GetField(field, json); has {
+		return res.Float(), has
+	} else {
+		return df, false
+	}
+}
+
+func GetString(field string, json *gjson.Result, defaultValue string) (string, bool) {
 	if res, has := GetField(field, json); has {
 		return res.String(), has
 	} else {
-		return df, false
+		return defaultValue, false
 	}
 }
 

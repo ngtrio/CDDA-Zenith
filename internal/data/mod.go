@@ -17,26 +17,18 @@ type Mod struct {
 	Description  string
 	Path         string
 	Dependencies []string
-	IdMap        map[string][]*string
-	NameMap      map[string][]*string
+	IdMap        map[string][]*gjson.Result
+	NameMap      map[string][]*gjson.Result
 	TempData     map[string][]*gjson.Result
 	Loaded       bool
 }
 
-func (mod *Mod) GetById(id string) []string {
-	return ptrToValue(mod.IdMap[id])
+func (mod *Mod) GetById(id string) []*gjson.Result {
+	return mod.IdMap[id]
 }
 
-func (mod *Mod) GetByName(name string) []string {
-	return ptrToValue(mod.NameMap[name])
-}
-
-func ptrToValue(ptrs []*string) []string {
-	res := make([]string, 0)
-	for _, v := range ptrs {
-		res = append(res, *v)
-	}
-	return res
+func (mod *Mod) GetByName(name string) []*gjson.Result {
+	return mod.NameMap[name]
 }
 
 func (mod *Mod) Finalize(mo *gotext.Mo) {
@@ -57,13 +49,17 @@ func (mod *Mod) processType(json *gjson.Result) {
 	} else {
 		switch type_ {
 		case "MONSTER":
-			mod.processMonster(json)
+			processMonster(json)
 		}
 	}
 
 }
 
-func (mod *Mod) processMonster(json *gjson.Result) {
+func processMonster(json *gjson.Result) {
+	processMonsterDiff(json)
+}
+
+func processMonsterDiff(json *gjson.Result) {
 	meleeSkill, _ := jsonutil.GetInt("melee_skill", json, 0)
 	meleeDice, _ := jsonutil.GetInt("melee_dice", json, 0)
 	bonusCut, _ := jsonutil.GetInt("melee_cut", json, 0)
@@ -89,12 +85,32 @@ func (mod *Mod) processMonster(json *gjson.Result) {
 
 	difficulty *= (float64(hp+speed-attackCost)+float64(morale+argo)*0.1)*0.01 + float64(visionDay+2*visionNight)*0.01
 	res, _ := sjson.Set(json.String(), "difficulty", difficulty)
+
+	if difficulty < 3 {
+		res, _ = sjson.Set(res, "diff_color", "light_gray")
+		res, _ = sjson.Set(res, "diff_desc", "<color_light_gray>Minimal threat.")
+	} else if difficulty < 10 {
+		res, _ = sjson.Set(res, "diff_color", "light_gray")
+		res, _ = sjson.Set(res, "diff_desc", "<color_light_gray>Mildly dangerous.</color>")
+	} else if difficulty < 20 {
+		res, _ = sjson.Set(res, "diff_color", "light_red")
+		res, _ = sjson.Set(res, "diff_desc", "<color_light_red>Dangerous.</color>")
+	} else if difficulty < 30 {
+		res, _ = sjson.Set(res, "diff_color", "red")
+		res, _ = sjson.Set(res, "diff_desc", "<color_red>Very dangerous.</color>")
+	} else if difficulty < 50 {
+		res, _ = sjson.Set(res, "diff_color", "red")
+		res, _ = sjson.Set(res, "diff_desc", "<color_red>Extremely dangerous.")
+	} else {
+		res, _ = sjson.Set(res, "diff_color", "red")
+		res, _ = sjson.Set(res, "diff_desc", "<color_red>Fatally dangerous!</color>")
+	}
+
 	*json = gjson.Parse(res)
 }
 
 func (mod *Mod) createIndex(id string, json *gjson.Result, mo *gotext.Mo) {
-	jsonStr := json.String()
 	name := i18n.Tran("name", json, mo)
-	mod.IdMap[id] = append(mod.IdMap[id], &jsonStr)
-	mod.NameMap[name] = append(mod.NameMap[name], &jsonStr)
+	mod.IdMap[id] = append(mod.IdMap[id], json)
+	mod.NameMap[name] = append(mod.NameMap[name], json)
 }

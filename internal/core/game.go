@@ -6,6 +6,7 @@ import (
 	"strings"
 	"zenith/internal/data"
 	"zenith/internal/loader"
+	"zenith/internal/view"
 	"zenith/pkg/fileutil"
 	"zenith/pkg/jsonutil"
 
@@ -76,8 +77,8 @@ func (game *Game) preLoad() error {
 							Description:  modInfo.Get("description").String(),
 							Path:         path,
 							Dependencies: dependencies,
-							IdMap:        make(map[string][]*string),
-							NameMap:      make(map[string][]*string),
+							IdMap:        make(map[string][]*gjson.Result),
+							NameMap:      make(map[string][]*gjson.Result),
 							TempData:     make(map[string][]*gjson.Result),
 							Loaded:       false,
 						}
@@ -299,36 +300,48 @@ func isInAllowList(json *gjson.Result) bool {
 	return allowList[type_]
 }
 
-func (game *Game) GetById(id string) []string {
-	return game.GetByModAndId("", id)
+func (game *Game) GetById(id, view string) []string {
+	return game.GetByModAndId("", id, view)
 }
 
-func (game *Game) GetByModAndId(mod, id string) []string {
+func (game *Game) GetByModAndId(mod, id, view string) []string {
+	jsons := make([]*gjson.Result, 0)
 	if mod == "" {
-		res := make([]string, 0)
 		for _, mod := range game.Mods {
-			res = append(res, mod.GetById(id)...)
+			jsons = append(jsons, mod.GetById(id)...)
 		}
-		return res
 	} else {
 		mod := game.Mods[mod]
-		return mod.GetById(id)
+		jsons = mod.GetById(id)
 	}
+	log.Info(jsons)
+	return game.jsonToView(jsons, view)
 }
 
-func (game *Game) GetByName(name string) []string {
-	return game.GetByModAndName("", name)
+func (game *Game) GetByName(name, view string) []string {
+	return game.GetByModAndName("", name, view)
 }
 
-func (game *Game) GetByModAndName(mod, name string) []string {
+func (game *Game) GetByModAndName(mod, name, view string) []string {
+	jsons := make([]*gjson.Result, 0)
 	if mod == "" {
-		res := make([]string, 0)
 		for _, mod := range game.Mods {
-			res = append(res, mod.GetByName(name)...)
+			jsons = append(jsons, mod.GetByName(name)...)
 		}
-		return res
 	} else {
 		mod := game.Mods[mod]
-		return mod.GetByName(name)
+		jsons = mod.GetByName(name)
 	}
+	return game.jsonToView(jsons, view)
+}
+
+func (game *Game) jsonToView(jsons []*gjson.Result, viewType string) []string {
+	views := make([]string, 0)
+	for _, json := range jsons {
+		view := view.View{Mo: game.Mo}
+		view.Type = viewType
+		view.RawJson = json
+		views = append(views, view.Render())
+	}
+	return views
 }

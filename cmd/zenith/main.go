@@ -5,10 +5,10 @@ import (
 	"path"
 	"runtime"
 
-	log "github.com/sirupsen/logrus"
-
 	"zenith/internal/core"
 	"zenith/internal/data"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -36,6 +36,8 @@ func init() {
 	}
 	game.Load(map[string]bool{"dda": true})
 
-	log.Info(game.GetById("mon_zombie_soldier_acid_2"))
-	log.Info(game.GetByName("酸液士兵丧尸"))
+	res := game.GetById("mon_zombie_hulk", "cli")
+	res1 := game.GetByName("丧尸", "cli")
+	log.Info(res, res1)
+
 }

@@ -14,6 +14,8 @@ type Color struct {
 }
 
 func (c *Color) Load(color string) {
+	c.reset()
+
 	parts := strings.Split(color, "_")
 	if len(parts) == 0 {
 		return
@@ -90,4 +92,11 @@ func (c *Color) convert() string {
 		}
 	}
 	return res
+}
+
+func (c *Color) reset() {
+	c.BgAttr = make([]string, 0)
+	c.FgAttr = make([]string, 0)
+	c.BgColor = ""
+	c.FgColor = ""
 }
