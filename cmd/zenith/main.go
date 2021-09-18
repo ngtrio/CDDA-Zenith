@@ -36,8 +36,8 @@ func init() {
 	}
 	game.Load(map[string]bool{"dda": true})
 
-	res := game.GetById("mon_zombie_hulk", "cli")
-	res1 := game.GetByName("丧尸", "cli")
+	res := game.GetById("mon_zombie_kevlar_2", "cli")
+	res1 := game.GetById("mon_zombie_hulk", "cli")
 	log.Info(res, res1)
 
 }

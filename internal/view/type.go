@@ -6,8 +6,8 @@ import (
 )
 
 type Type interface {
-	Bind(json *gjson.Result, mo *gotext.Mo)
-	CliView() string
+	Bind(json *gjson.Result, mo *gotext.Mo, po *gotext.Po)
+	CliView(po *gotext.Po) string
 	JsonView() string
 }
 
@@ -21,6 +21,20 @@ type BaseType struct {
 
 type Monster struct {
 	BaseType
-	DiffDesc string  `json:"diff_desc"`
-	Diff     float64 `json:"difficulty"`
+	DiffDesc    string   `json:"diff_desc"`
+	Diff        float64  `json:"difficulty"`
+	Volume      string   `json:"volume"`
+	Weight      string   `json:"weight"`
+	Hp          int64    `json:"hp"`
+	Speed       int64    `json:"speed"`
+	Attack      string   `json:"attack"`
+	ArmorBash   int64    `json:"armor_bash"`
+	ArmorCut    int64    `json:"armor_cut"`
+	ArmorBullet int64    `json:"armor_bullet"`
+	ArmorStab   int64    `json:"armor_stab"`
+	ArmorAcid   int64    `json:"armor_acid"`
+	ArmorFire   int64    `json:"armor_fire"`
+	VisionDay   int64    `json:"vision_day"`
+	VisionNight int64    `json:"vision_night"`
+	FlagsDesc   []string `json:"flags_description"`
 }

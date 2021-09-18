@@ -12,6 +12,7 @@ type View struct {
 	Type    string
 	RawJson *gjson.Result
 	Mo      *gotext.Mo
+	Po      *gotext.Po
 }
 
 func (v *View) Render() string {
@@ -24,10 +25,10 @@ func (v *View) Render() string {
 		log.Warnf("type: %s is not supported to render", tp)
 		return ""
 	}
-	obj.Bind(v.RawJson, v.Mo)
+	obj.Bind(v.RawJson, v.Mo, v.Po)
 	switch v.Type {
 	case "cli":
-		return obj.CliView()
+		return obj.CliView(v.Po)
 	case "json":
 		return obj.JsonView()
 	default:

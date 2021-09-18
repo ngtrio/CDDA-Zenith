@@ -21,6 +21,7 @@ type Game struct {
 	ModPath string
 	Lang    string
 	Mo      *gotext.Mo
+	Po      *gotext.Po
 }
 
 func (game *Game) Load(targets map[string]bool) {
@@ -110,7 +111,8 @@ func (game *Game) doLoad(mod *data.Mod) {
 
 func (game *Game) postLoad() {
 
-	game.Mo = loader.LoadLang(game.Lang)
+	game.Mo = loader.LoadMo(game.Lang)
+	game.Po = loader.LoadPo(game.Lang)
 
 	for _, mod := range game.Mods {
 		mod.Finalize(game.Mo)
@@ -332,13 +334,14 @@ func (game *Game) GetByModAndName(mod, name, view string) []string {
 		mod := game.Mods[mod]
 		jsons = mod.GetByName(name)
 	}
+	log.Info(jsons)
 	return game.jsonToView(jsons, view)
 }
 
 func (game *Game) jsonToView(jsons []*gjson.Result, viewType string) []string {
 	views := make([]string, 0)
 	for _, json := range jsons {
-		view := view.View{Mo: game.Mo}
+		view := view.View{Mo: game.Mo, Po: game.Po}
 		view.Type = viewType
 		view.RawJson = json
 		views = append(views, view.Render())
