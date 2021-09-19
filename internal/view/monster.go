@@ -30,10 +30,6 @@ func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 	temp := i18n.Tran("diff_desc", raw, mo)
 	l := strings.Index(temp, ">")
 	r := strings.LastIndex(temp, "<")
-	// in case of "<color_light_gray>Minimal threat."
-	if r == 0 {
-		r = len(temp)
-	}
 	diffDesc := temp[l+1 : r]
 	colorLoader.Load(diffColor)
 	m.DiffDesc = colorLoader.Colorized(diffDesc)
@@ -70,7 +66,10 @@ func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 
 func (m *Monster) CliView(po *gotext.Po) string {
 	template := `
-%s %s
+%s %s(%s)
+---
+%s
+---
 %s(%.3f) 
 ---
 %s
@@ -85,7 +84,7 @@ func (m *Monster) CliView(po *gotext.Po) string {
 ---
 `
 	res := fmt.Sprintf(template,
-		m.Symbol, m.Name,
+		m.Symbol, m.Name, m.ID, m.Mod,
 		m.DiffDesc, m.Diff, m.Desc,
 		i18n.TranUI("Attack", po), m.Attack,
 		i18n.TranUI("HP", po), m.Hp, i18n.TranUI("Speed", po), m.Speed,

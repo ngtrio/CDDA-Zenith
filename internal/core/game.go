@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"zenith/internal/data"
+	"zenith/internal/i18n"
 	"zenith/internal/loader"
 	"zenith/internal/view"
 	"zenith/pkg/fileutil"
@@ -95,12 +96,14 @@ func (game *Game) preLoad() error {
 }
 
 func (game *Game) doLoad(mod *data.Mod) {
+	if mod.Loaded {
+		return
+	}
+
 	dependencies := mod.Dependencies
 	for _, dependency := range dependencies {
 		m := game.Mods[dependency]
-		if !m.Loaded {
-			game.doLoad(m)
-		}
+		game.doLoad(m)
 	}
 	path := mod.Path
 	jsons := loader.LoadJsonFromPaths(path)
@@ -116,11 +119,6 @@ func (game *Game) postLoad() {
 
 	for _, mod := range game.Mods {
 		mod.Finalize(game.Mo)
-	}
-
-	// modNum := len(game.Mods)
-	for _, mod := range game.Mods {
-		log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
 	}
 }
 
@@ -307,16 +305,17 @@ func (game *Game) GetById(id, view string) []string {
 }
 
 func (game *Game) GetByModAndId(mod, id, view string) []string {
-	jsons := make([]*gjson.Result, 0)
+	jsons := make(map[string][]*gjson.Result)
 	if mod == "" {
 		for _, mod := range game.Mods {
-			jsons = append(jsons, mod.GetById(id)...)
+			modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+			jsons[modName] = append(jsons[modName], mod.GetById(id)...)
 		}
 	} else {
 		mod := game.Mods[mod]
-		jsons = mod.GetById(id)
+		modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+		jsons[modName] = append(jsons[modName], mod.GetById(id)...)
 	}
-	log.Info(jsons)
 	return game.jsonToView(jsons, view)
 }
 
@@ -325,26 +324,29 @@ func (game *Game) GetByName(name, view string) []string {
 }
 
 func (game *Game) GetByModAndName(mod, name, view string) []string {
-	jsons := make([]*gjson.Result, 0)
+	jsons := make(map[string][]*gjson.Result)
 	if mod == "" {
 		for _, mod := range game.Mods {
-			jsons = append(jsons, mod.GetByName(name)...)
+			modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+			jsons[modName] = append(jsons[modName], mod.GetByName(name)...)
 		}
 	} else {
 		mod := game.Mods[mod]
-		jsons = mod.GetByName(name)
+		modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+		jsons[modName] = append(jsons[modName], mod.GetByName(name)...)
 	}
-	log.Info(jsons)
 	return game.jsonToView(jsons, view)
 }
 
-func (game *Game) jsonToView(jsons []*gjson.Result, viewType string) []string {
+func (game *Game) jsonToView(jsonMap map[string][]*gjson.Result, viewType string) []string {
 	views := make([]string, 0)
-	for _, json := range jsons {
-		view := view.View{Mo: game.Mo, Po: game.Po}
-		view.Type = viewType
-		view.RawJson = json
-		views = append(views, view.Render())
+	for modName, jsons := range jsonMap {
+		for _, json := range jsons {
+			view := view.View{Mo: game.Mo, Po: game.Po, Mod: modName}
+			view.Type = viewType
+			view.RawJson = json
+			views = append(views, view.Render())
+		}
 	}
 	return views
 }

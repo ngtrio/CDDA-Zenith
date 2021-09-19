@@ -9,6 +9,7 @@ import (
 )
 
 type View struct {
+	Mod     string
 	Type    string
 	RawJson *gjson.Result
 	Mo      *gotext.Mo
@@ -20,7 +21,11 @@ func (v *View) Render() string {
 	var obj Type
 	switch tp {
 	case "MONSTER":
-		obj = &Monster{}
+		obj = &Monster{
+			BaseType: BaseType{
+				Mod: v.Mod,
+			},
+		}
 	default:
 		log.Warnf("type: %s is not supported to render", tp)
 		return ""

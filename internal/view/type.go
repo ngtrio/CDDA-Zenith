@@ -12,6 +12,7 @@ type Type interface {
 }
 
 type BaseType struct {
+	Mod    string `json:"mod"`
 	ID     string `json:"id"`
 	Type   string `json:"type"`
 	Name   string `json:"name"`

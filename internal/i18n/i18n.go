@@ -46,6 +46,10 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 	}
 }
 
+func TranString(raw string, mo *gotext.Mo) string {
+	return mo.Get(raw)
+}
+
 func TranUI(raw string, po *gotext.Po) string {
 	return po.Get(raw)
 }

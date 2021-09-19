@@ -40,6 +40,7 @@ func (mod *Mod) Finalize(mo *gotext.Mo) {
 			}
 		}
 	}
+	log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
 }
 
 func (mod *Mod) processType(json *gjson.Result) {
@@ -88,7 +89,7 @@ func processMonsterDiff(json *gjson.Result) {
 
 	if difficulty < 3 {
 		res, _ = sjson.Set(res, "diff_color", "light_gray")
-		res, _ = sjson.Set(res, "diff_desc", "<color_light_gray>Minimal threat.")
+		res, _ = sjson.Set(res, "diff_desc", "<color_light_gray>Minimal threat.</color>")
 	} else if difficulty < 10 {
 		res, _ = sjson.Set(res, "diff_color", "light_gray")
 		res, _ = sjson.Set(res, "diff_desc", "<color_light_gray>Mildly dangerous.</color>")
@@ -100,7 +101,7 @@ func processMonsterDiff(json *gjson.Result) {
 		res, _ = sjson.Set(res, "diff_desc", "<color_red>Very dangerous.</color>")
 	} else if difficulty < 50 {
 		res, _ = sjson.Set(res, "diff_color", "red")
-		res, _ = sjson.Set(res, "diff_desc", "<color_red>Extremely dangerous.")
+		res, _ = sjson.Set(res, "diff_desc", "<color_red>Extremely dangerous.</color>")
 	} else {
 		res, _ = sjson.Set(res, "diff_color", "red")
 		res, _ = sjson.Set(res, "diff_desc", "<color_red>Fatally dangerous!</color>")
