@@ -11,10 +11,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var game core.Game
+
 func main() {
-	// mo := loader.LoadLang("zh_CN")
-	// str := mo.Get("caustic soldier zombie")
-	// log.Info(str)
+	for {
+		fmt.Print("Zenith> ")
+		var input string
+		fmt.Scanln(&input)
+		res := game.GetById(input, "cli")
+		if len(res) == 0 {
+			res = game.GetByName(input, "cli")
+		}
+		for _, out := range res {
+			fmt.Println(out)
+		}
+	}
 }
 
 func init() {
@@ -29,15 +40,20 @@ func init() {
 	log.SetReportCaller(true)
 	// log.SetLevel(log.DebugLevel)
 
-	game := core.Game{
+	game = core.Game{
 		Mods:    make(map[string]*data.Mod),
 		ModPath: "cataclysmdda-0.F/data/mods",
 		Lang:    "zh_CN",
 	}
-	game.Load(map[string]bool{"dda": true})
+	game.Load(map[string]bool{})
 
-	res := game.GetById("mon_zombie_kevlar_2", "cli")
-	res1 := game.GetById("mon_zombie_hulk", "cli")
-	log.Info(res, res1)
+	fmt.Println(`
+	 __________ _   _ ___ _____ _   _ 
+	|__  / ____| \ | |_ _|_   _| | | |
+	  / /|  _| |  \| || |  | | | |_| |
+	 / /_| |___| |\  || |  | | |  _  |
+	/____|_____|_| \_|___| |_| |_| |_|
 
+	  - Cataclysm: Dark Days Ahead -													
+	`)
 }
