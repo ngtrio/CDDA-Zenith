@@ -307,12 +307,12 @@ func (game *Game) GetByModAndId(mod, id, view string) []string {
 	jsons := make(map[string][]*gjson.Result)
 	if mod == "" {
 		for _, mod := range game.Mods {
-			modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+			modName := i18n.TranString(mod.Name, game.Mo)
 			jsons[modName] = append(jsons[modName], mod.GetById(id)...)
 		}
 	} else {
 		mod := game.Mods[mod]
-		modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+		modName := i18n.TranString(mod.Name, game.Mo)
 		jsons[modName] = append(jsons[modName], mod.GetById(id)...)
 	}
 	return game.jsonToView(jsons, view)
@@ -326,12 +326,12 @@ func (game *Game) GetByModAndName(mod, name, view string) []string {
 	jsons := make(map[string][]*gjson.Result)
 	if mod == "" {
 		for _, mod := range game.Mods {
-			modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+			modName := i18n.TranString(mod.Name, game.Mo)
 			jsons[modName] = append(jsons[modName], mod.GetByName(name)...)
 		}
 	} else {
 		mod := game.Mods[mod]
-		modName := fmt.Sprintf("%s, %s", i18n.TranString(mod.Name, game.Mo), mod.Name)
+		modName := i18n.TranString(mod.Name, game.Mo)
 		jsons[modName] = append(jsons[modName], mod.GetByName(name)...)
 	}
 	return game.jsonToView(jsons, view)

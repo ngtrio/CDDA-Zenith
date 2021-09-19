@@ -22,6 +22,8 @@ type BaseType struct {
 
 type Monster struct {
 	BaseType
+	AttackCost  int64    `json:"attack_cost"`
+	BleedRate   int64    `json:"bleed_rate"`
 	DiffDesc    string   `json:"diff_desc"`
 	Diff        float64  `json:"difficulty"`
 	Volume      string   `json:"volume"`
@@ -29,6 +31,8 @@ type Monster struct {
 	Hp          int64    `json:"hp"`
 	Speed       int64    `json:"speed"`
 	Attack      string   `json:"attack"`
+	Aggression  int64    `json:"aggression"`
+	Morale      int64    `json:"morale"`
 	ArmorBash   int64    `json:"armor_bash"`
 	ArmorCut    int64    `json:"armor_cut"`
 	ArmorBullet int64    `json:"armor_bullet"`
