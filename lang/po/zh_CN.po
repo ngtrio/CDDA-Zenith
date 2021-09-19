@@ -29,10 +29,10 @@ msgid "Material"
 msgstr "材质"
  
 msgid "Aggression"
-msgstr "侵略性"
+msgstr "攻击性"
 
 msgid "Morale"
-msgstr "斗志"
+msgstr "士气"
 
 msgid "Attack"
 msgstr "攻击"
@@ -55,32 +55,38 @@ msgstr "酸性防护"
 msgid "Armor fire"
 msgstr "火焰防护"
 
-msgid "Vision day"
-msgstr "日视"
+msgid "Vision"
+msgstr "视力"
 
-msgid "Vision night"
-msgstr "夜视"
+msgid "night"
+msgstr "夜"
 
-msgid "It can see you (and will run/follow)"
-msgstr "它拥有视觉"
+msgid "Attack cost"
+msgstr "攻击消耗"
 
-msgid "It can hear you"
-msgstr "它拥有听觉"
+msgid "Bleed rate"
+msgstr "流血速率"
 
-msgid "Pursues sounds more than most monsters"
+msgid "It can see you (and will run/follow)."
 msgstr ""
 
-msgid "It can smell you"
-msgstr "它拥有嗅觉"
-
-msgid "Keen sense of smell"
+msgid "It can hear you."
 msgstr ""
 
-msgid "Stumbles in its movement"
-msgstr "它容易在行动中跌倒"
+msgid "Pursues sounds more than most monsters."
+msgstr ""
 
-msgid "Warm blooded"
-msgstr "它属于温血动物"
+msgid "It can smell you."
+msgstr ""
+
+msgid "Keen sense of smell."
+msgstr ""
+
+msgid "Stumbles in its movement."
+msgstr ""
+
+msgid "Warm blooded."
+msgstr ""
 
 msgid "Is a nemesis monster"
 msgstr ""
@@ -88,115 +94,115 @@ msgstr ""
 msgid "Headshots not allowed!"
 msgstr ""
 
-msgid "It's one size smaller for ranged attacks, no less then creature_size::tiny"
+msgid "It's one size smaller for ranged attacks no less then MS_TINY"
 msgstr ""
 
-msgid "Its attacks may grab us!"
+msgid "Its attacks may grab you!"
 msgstr ""
 
-msgid "Bashes down doors"
-msgstr "它可以破坏门"
-
-msgid "Bashes down walls and more"
-msgstr "它可以破坏墙和其他地形"
-
-msgid "Tunnels through just about anything"
+msgid "Bashes down doors."
 msgstr ""
 
-msgid "Poisonous to eat"
-msgstr "它的肉吃起来是有毒的"
-
-msgid "Attack may poison the player"
+msgid "Bashes down walls and more. (2.5x bash multiplier where base is the critter's max melee bashing)"
 msgstr ""
 
-msgid "Attack may SEVERELY poison the player"
+msgid "Tunnels through just about anything (15x bash multiplier: dark wyrms' bash skill 12->180)"
 msgstr ""
 
-msgid "Attack may paralyze the player with venom"
+msgid "Poisonous to eat."
 msgstr ""
 
-msgid "Doesn't destroy webs"
+msgid "Attack may poison the player."
 msgstr ""
 
-msgid "Digs through the ground"
+msgid "Attack may severely poison the player."
 msgstr ""
 
-msgid "Can dig and walk"
+msgid "Attack may paralyze the player with venom."
 msgstr ""
 
-msgid "Can fly (over water, etc)"
+msgid "Doesn't destroy webs and won't get caught in them."
 msgstr ""
 
-msgid "Confined to water"
+msgid "Digs through the ground."
 msgstr ""
 
-msgid "Treats water as 50 movement point terrain"
+msgid "Can dig and walk."
 msgstr ""
 
-msgid "Attacks other monsters"
+msgid "Can fly (over water etc.)"
 msgstr ""
 
-msgid "Is an \"animal\" for purposes of the Animal Empath trait"
+msgid "Confined to water."
 msgstr ""
 
-msgid "Absorbs physical damage to a great degree"
+msgid "Treats water as 50 movement point terrain."
 msgstr ""
 
-msgid "Dies in full sunlight"
+msgid "Attacks other monsters."
 msgstr ""
 
-msgid "Shocks unarmed attackers"
+msgid "Is an animal for purposes of the Animal Empathy trait."
 msgstr ""
 
-msgid "Immune to acid"
+msgid "Absorbs physical damage to a great degree."
 msgstr ""
 
-msgid "Leaves a trail of acid"
+msgid "Dies in full sunlight."
+msgstr ""
+
+msgid "Shocks unarmed attackers."
+msgstr ""
+
+msgid "Immune to acid."
+msgstr ""
+
+msgid "Leaves a trail of acid."
 msgstr ""
 
 msgid "Leaves an intermittent trail of acid"
 msgstr ""
 
-msgid "Immune to fire"
+msgid "Immune to fire."
 msgstr ""
 
-msgid "Ignores the effect of sludge trails"
+msgid "Ignores the effect of sludge trails."
 msgstr ""
 
-msgid "Causes monster to leave a sludge trap trail when moving"
+msgid "Causes the monster to leave a sludge trap trail when moving."
 msgstr ""
 
-msgid "Causes monster to leave a low intensity, 1 tile sludge pool approximately every other tile when moving"
+msgid "Causes the monster to occasionally leave a 1-tile sludge trail when moving."
 msgstr ""
 
-msgid "Immune to cold damage"
+msgid "Immune to cold damage."
 msgstr ""
 
-msgid "Burns stuff and is immune to fire"
+msgid "Burns stuff and is immune to fire."
 msgstr ""
 
-msgid "When it dies, local populations start to die off too"
+msgid "When it dies local populations start to die off too."
 msgstr ""
 
-msgid "e.g. a robot; affected by EMP blasts, and other stuff"
+msgid "e.g. A Robot; affected by emp blasts and other stuff."
 msgstr ""
 
-msgid "May produce fur when butchered"
+msgid "May produce fur when butchered."
 msgstr ""
 
-msgid "May produce leather when butchered"
+msgid "May produce leather when butchered."
 msgstr ""
 
-msgid "May produce wool when butchered"
+msgid "May produce wool when butchered."
 msgstr ""
 
-msgid "May produce bones and sinews when butchered; if combined with POISON flag, tainted bones, if combined with HUMAN, human bones"
+msgid "May produce bones and sinews when butchered."
 msgstr ""
 
-msgid "May produce fat when butchered; if combined with POISON flag, tainted fat"
+msgid "May produce fat when butchered."
 msgstr ""
 
-msgid "Despawns when a nearby console is properly hacked"
+msgid "Despawns when a nearby console is properly hacked."
 msgstr ""
 
 msgid "Doesn't move (e.g. turrets)"
@@ -205,46 +211,46 @@ msgstr ""
 msgid "Despawns when a science ID card is used on a nearby console"
 msgstr ""
 
-msgid "A rideable mech that is immobile until ridden."
+msgid "This monster is a mech suit that can be piloted."
 msgstr ""
 
-msgid "A rideable mech that was designed for military work."
+msgid "Is a military-grade mech."
 msgstr ""
 
-msgid "This mech gives you IR night-vision."
+msgid "This mech grants you night-vision and enhanced overmap sight radius when piloted."
 msgstr ""
 
-msgid "This mech gives you thorough protection."
+msgid "This mech can protect you thoroughly when piloted."
 msgstr ""
 
-msgid "Flee for several turns after a melee attack"
+msgid "Flee for several turns after a melee attack."
 msgstr ""
 
-msgid "You feel guilty for killing it"
+msgid "You feel guilty for killing it."
 msgstr ""
 
-msgid "You can pay this bot to be your friend for a time"
+msgid "Creature can be turned into a pet for a limited time in exchange of e-money."
 msgstr ""
 
-msgid "It's a live human, as long as it's alive"
+msgid "It's a live human as long as it's alive."
 msgstr ""
 
-msgid "Creature can't drown and is unharmed by gas, smoke, or poison"
-msgstr "它不会被淹死，也不会被气体、烟雾或毒药伤害"
-
-msgid "Monster catches fire, burns, and spreads fire to nearby objects"
+msgid "Creature can't drown and is unharmed by gas smoke or poison."
 msgstr ""
 
-msgid "Monster corpse will revive after a short period of time"
-msgstr "它的尸体将在短时间内复活"
-
-msgid "May produce chitin when butchered"
+msgid "Monster catches fire burns and spreads fire to nearby objects."
 msgstr ""
 
-msgid "Obsolete flag labeling \"nuisance\" or \"scenery\" monsters, now used to prevent loading the same."
+msgid "Monster corpse will revive after a short period of time."
 msgstr ""
 
-msgid "Creature won't leave gibs / meat chunks when killed with huge damage."
+msgid "May produce chitin when butchered."
+msgstr ""
+
+msgid "Obsolete flag for inconsequential monsters now prevents loading."
+msgstr ""
+
+msgid "Does not leave gibs / meat chunks when killed with huge damage."
 msgstr ""
 
 msgid "Creature is a larva. Currently used for gib and blood handling."
@@ -259,67 +265,67 @@ msgstr ""
 msgid "Makes monster bleed bile."
 msgstr ""
 
-msgid "Consumes objects it moves over which gives bonus hp."
+msgid "Consumes objects it moves over. (Modders use this)."
 msgstr ""
 
-msgid "Consumes objects it moves over which gives bonus hp. If it gets enough bonus HP, it spawns a copy of itself."
+msgid "Consumes objects it moves over and if it absorbs enough it will split into a copy."
 msgstr ""
 
-msgid "May produce a common CBM a power CBM when butchered."
+msgid "May produce a common and a power CBM when butchered."
 msgstr ""
 
-msgid "May produce a power CBM when butchered, independent of MF_CBM_wev."
+msgid "May produce a power CBM when butchered independent of other CBMs."
 msgstr ""
 
-msgid "May produce a bionic from bionics_sci when butchered."
+msgid "May produce a CBM from 'bionics_sci' item group when butchered."
 msgstr ""
 
-msgid "May produce a bionic from bionics_op when butchered, and the power storage is mk 2."
+msgid "May produce a CBM or two from 'bionics_op' item group when butchered."
 msgstr ""
 
-msgid "May produce a bionic from bionics_tech when butchered."
+msgid "May produce a CBM or two from 'bionics_tech' item group and a power CBM when butchered."
 msgstr ""
 
-msgid "May produce a bionic from bionics_subs when butchered."
+msgid "May produce a CBM or two from bionics_subs and a power CBM when butchered."
 msgstr ""
 
-msgid "Any clothing it drops will be filthy."
-msgstr "它掉落的衣物都将是被污染的"
+msgid "Any clothing it drops will be filthy. The squeamish trait prevents wearing clothing with this flag one can't craft anything from filthy components and wearing filthy clothes may result in infection if hit in melee."
+msgstr ""
 
 msgid "It is fishable."
 msgstr ""
 
-msgid "Monsters that can pile up against obstacles and add their strength together to break them."
-msgstr "该类生物能合力摧毁障碍物"
-
-msgid "Monsters that like to group together and form loose packs"
-msgstr "该类生物喜欢聚集在一起，形成松散的群体"
-
-msgid "Monsters that are more courageous when near friends"
+msgid "Gets help from monsters around it when bashing."
 msgstr ""
 
-msgid "Monster contain's its ammo inside itself, no need to load on launch. Prevents ammo from being dropped on disable."
+msgid "Groups together and forms loose packs."
 msgstr ""
 
-msgid "Monsters that can climb certain terrain and furniture"
+msgid "More courageous when near friends."
 msgstr ""
 
-msgid "Monsters that will never use melee attack, useful for having them use grab without attacking the player"
+msgid "Monster contains ammo inside itself no need to load on launch. Prevents ammo from being dropped on disable."
 msgstr ""
 
-msgid "Attempts to keep a short distance (tracking_distance) from its current target.  The default tracking distance is 8 tiles"
+msgid "Can climb over fences or similar obstacles quickly."
 msgstr ""
 
-msgid "Monsters that can push creatures out of their way"
-msgstr "它会将拦路的生物推开"
+msgid "Monster will never do melee attacks."
+msgstr ""
+
+msgid "Monster will try to keep tracking_distance number of tiles between it and its current target."
+msgstr ""
+
+msgid "Can push creatures out of its way."
+msgstr ""
 
 msgid "Monsters that can push vehicles out of their way"
-msgstr "它会将拦路的车辆推开"
-
-msgid "Monsters that are invisible in poor light conditions"
 msgstr ""
 
-msgid "When revived, this monster has full hitpoints and speed"
+msgid "Monster becomes invisible if it's more than one tile away and the lighting on its tile is LL_LOW or less. Visibility is not affected by night vision."
+msgstr ""
+
+msgid "When revived this monster has full hitpoints and speed"
 msgstr ""
 
 msgid "This monster can't be revived by necros. It will still rise on its own."
@@ -343,25 +349,25 @@ msgstr ""
 msgid "Monsters that will NOT appear when player's producing hallucinations"
 msgstr ""
 
-msgid "This monster can be played with if it's a pet."
+msgid "This creature can be played with if it's a pet."
 msgstr ""
 
-msgid "This monster can be mounted and ridden when tamed."
+msgid "Creature can be ridden or attached to an harness."
 msgstr ""
 
 msgid "This monster can be harnessed when tamed."
 msgstr ""
 
-msgid "This monster will respond to the dog whistle."
+msgid "Becomes friendly / tamed with dog food."
 msgstr ""
 
-msgid "This monster is milkable."
+msgid "Produces milk when milked."
 msgstr ""
 
-msgid "This monster is shearable."
+msgid "This monster can be sheared for wool."
 msgstr ""
 
-msgid "This monster doesn't breed, even though it has breed data"
+msgid "Creature doesn't reproduce even though it has reproduction data - useful when using copy-from to make child versions of adult creatures"
 msgstr ""
 
 msgid "This monster can't be damaged by fungal spores and can't be fungalized either."
@@ -370,38 +376,59 @@ msgstr ""
 msgid "This monster won't follow the player automatically when tamed."
 msgstr ""
 
-msgid "This monster occasionally drips napalm on move"
+msgid "Occasionally drips napalm on move."
 msgstr ""
 
-msgid "This monster occasionally drips gasoline on move"
+msgid "Occasionally drips gasoline on move."
 msgstr ""
 
 msgid "This monster is surrounded by an electrical field that ignites flammable liquids near it"
 msgstr ""
 
-msgid "This monster makes move noises as if ~2 sizes louder, even if flying."
+msgid "Makes move noises as if ~2 sizes louder even if flying."
 msgstr ""
 
-msgid "This monster can open doors."
+msgid "Can open doors on its path."
 msgstr ""
 
-msgid "This monster is immune to the stun effect"
+msgid "- This monster is immune to stun."
 msgstr ""
 
 msgid "This monster drops ammo. Should not be set for monsters that use pseudo ammo."
 msgstr ""
 
-msgid "This monster is immune to insecticide, even though it's made of bug flesh"
+msgid "It's immune to insecticide even though it's made of bug flesh ("iflesh")."
 msgstr ""
 
-msgid "This monster has any sort of ranged attack"
+msgid "Monster has any sort of ranged attack."
 msgstr ""
 
-msgid "This monster is hard to spot, even in broad daylight"
+msgid "Stays invisible up to (current Perception + base Perception if the character has the Spotting proficiency) tiles away even in broad daylight. Monsters see it from the lower of vision_day and vision_night ranges."
 msgstr ""
 
-msgid "This monster is hard to spot if it is underwater, especially if you aren't"
+msgid "If in water stays invisible up to (current Perception + base Perception if the character has the Spotting proficiency) tiles away even in broad daylight. Monsters see it from the lower of vision_day and vision_night ranges. Can also make it harder to see in deep water or across Z-levels if it is underwater and the viewer is not."
 msgstr ""
 
 msgid "Sets the length of the flags - obviously must be LAST"
+msgstr ""
+
+msgid "Becomes friendly / tamed with bird food."
+msgstr ""
+
+msgid "Becomes friendly / tamed with cat food."
+msgstr ""
+
+msgid "Becomes friendly / tamed with cattle fodder."
+msgstr ""
+
+msgid "this water is flowing."
+msgstr ""
+
+msgid "This monster does not appear while the player is hallucinating."
+msgstr ""
+
+msgid "can be attached to an harness."
+msgstr ""
+
+msgid "Source use only."
 msgstr ""
