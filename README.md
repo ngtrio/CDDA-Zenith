@@ -1,4 +1,5 @@
 # Zenith
+Powerful weapon for your ["Cataclysm: Dark Days Ahead"](https://github.com/CleverRaven/Cataclysm-DDA) tour!
 ```
  ______________________________ 
 / Hey man! Take Zenith and ME, \
