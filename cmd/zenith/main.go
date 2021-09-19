@@ -47,12 +47,17 @@ func init() {
 	game.Load(map[string]bool{})
 
 	fmt.Println(`
-	 __________ _   _ ___ _____ _   _ 
-	|__  / ____| \ | |_ _|_   _| | | |
-	  / /|  _| |  \| || |  | | | |_| |
-	 / /_| |___| |\  || |  | | |  _  |
-	/____|_____|_| \_|___| |_| |_| |_|
+	 ______________________________ 
+	/ Hey man! Take Zenith and ME, \
+	\ you'll survive!              /
+	 ------------------------------ 
+    		\   ^__^
+    		 \  (oo)\_______
+    		    (__)\       )\/\
+    		        ||----w |
+    		        ||     ||
 
-	  - Cataclysm: Dark Days Ahead -													
+         - Cataclysm: Dark Days Ahead -
 	`)
+
 }
