@@ -6,7 +6,6 @@ import (
 	"runtime"
 
 	"zenith/internal/core"
-	"zenith/internal/data"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -41,7 +40,7 @@ func init() {
 	// log.SetLevel(log.DebugLevel)
 
 	game = core.Game{
-		Mods:    make(map[string]*data.Mod),
+		Mods:    make(map[string]*core.Mod),
 		ModPath: "cataclysmdda-0.F/data/mods",
 		Lang:    "zh_CN",
 	}

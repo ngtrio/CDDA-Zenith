@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"zenith/internal/color"
 	"zenith/internal/data"
 	"zenith/internal/i18n"
 	"zenith/pkg/jsonutil"
@@ -22,7 +21,7 @@ func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 
 	cr, _ := jsonutil.GetString("color", raw, "")
 	symbol, _ := jsonutil.GetString("symbol", raw, "")
-	var colorLoader color.Color
+	var colorLoader Color
 	colorLoader.Load(cr)
 	m.Symbol = colorLoader.Colorized(symbol)
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"zenith/internal/data"
 	"zenith/internal/i18n"
 	"zenith/internal/loader"
 	"zenith/internal/view"
@@ -18,7 +17,7 @@ import (
 
 type Game struct {
 	Version string
-	Mods    map[string]*data.Mod
+	Mods    map[string]*Mod
 	ModPath string
 	Lang    string
 	Mo      *gotext.Mo
@@ -73,7 +72,7 @@ func (game *Game) preLoad() error {
 							}
 						}
 
-						mod := &data.Mod{
+						mod := &Mod{
 							ID:           id,
 							Name:         modInfo.Get("name").String(),
 							Description:  modInfo.Get("description").String(),
@@ -95,7 +94,7 @@ func (game *Game) preLoad() error {
 	return nil
 }
 
-func (game *Game) doLoad(mod *data.Mod) {
+func (game *Game) doLoad(mod *Mod) {
 	if mod.Loaded {
 		return
 	}
@@ -122,7 +121,7 @@ func (game *Game) postLoad() {
 	}
 }
 
-func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
+func (game *Game) processModData(mod *Mod, jsons []*gjson.Result) {
 	for _, json := range jsons {
 		id := getId(json)
 		if id == "" {
@@ -147,7 +146,7 @@ func (game *Game) processModData(mod *data.Mod, jsons []*gjson.Result) {
 	}
 }
 
-func (game *Game) inherit(mod *data.Mod, json *gjson.Result) bool {
+func (game *Game) inherit(mod *Mod, json *gjson.Result) bool {
 	cf := json.Get("copy-from")
 	if !cf.Exists() {
 		return false

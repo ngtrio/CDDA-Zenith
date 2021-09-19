@@ -1,4 +1,4 @@
-package data
+package core
 
 import (
 	"zenith/internal/i18n"

@@ -1,4 +1,4 @@
-package color
+package view
 
 import (
 	"strings"
