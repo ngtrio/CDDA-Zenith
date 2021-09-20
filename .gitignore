@@ -14,7 +14,7 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-/data
 *tar.gz
-/cataclysmdda-0.F
+/cdda
 .vscode
+zenith
