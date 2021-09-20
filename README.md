@@ -46,3 +46,5 @@ For example, the monster's HP, speed, attack, etc. More types such as recipes an
    For example, if you want to search `zombie hulk`(the corresponding id is `mon_zombie_hulk`), then your can enter any of them.  
    ![](./doc/2.png)
 
+4. Quit  
+   Just enter `quit` or `exit`!
