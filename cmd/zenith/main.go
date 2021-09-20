@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -138,10 +139,15 @@ func loadData(version, lang string) {
 }
 
 func cli() {
+	scanner := bufio.NewScanner(os.Stdin)
+
 	for {
 		fmt.Print("Zenith> ")
+
 		var input string
-		fmt.Scanln(&input)
+		if scanner.Scan() {
+			input = scanner.Text()
+		}
 
 		if input == "exit" || input == "quit" {
 			fmt.Println("Bye!")
