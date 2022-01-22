@@ -102,7 +102,11 @@ func (game *Game) doLoad(mod *Mod) {
 	dependencies := mod.Dependencies
 	for _, dependency := range dependencies {
 		m := game.Mods[dependency]
-		game.doLoad(m)
+		if m != nil {
+			game.doLoad(m)
+		} else {
+			log.Warnf("%v's dependency: %v is not found.", mod.Name, dependency)
+		}
 	}
 	path := mod.Path
 	jsons := loader.LoadJsonFromPaths(path)
