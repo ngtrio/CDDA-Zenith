@@ -14,25 +14,22 @@ import (
 )
 
 // default value see: https://github.com/CleverRaven/Cataclysm-DDA/blob/master/src/mtype.h
-func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
+func (m *VO) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 	m.ID, _ = jsonutil.GetString("id", raw, "")
 	m.Type, _ = jsonutil.GetString("type", raw, "")
 	m.Name = i18n.Tran("name", raw, mo)
-	m.Desc = i18n.Tran("description", raw, mo)
+	m.Description = i18n.Tran("description", raw, mo)
 
-	cr, _ := jsonutil.GetString("color", raw, "")
-	symbol, _ := jsonutil.GetString("symbol", raw, "")
-	var colorLoader Color
-	colorLoader.Load(cr)
-	m.Symbol = colorLoader.Colorized(symbol)
+	m.SymbolColor, _ = jsonutil.GetString("color", raw, "")
+	m.Symbol, _ = jsonutil.GetString("symbol", raw, "")
 
-	diffColor, _ := jsonutil.GetString("diff_color", raw, "")
+	m.DiffColor, _ = jsonutil.GetString("diff_color", raw, "")
 	temp := i18n.Tran("diff_desc", raw, mo)
 	l := strings.Index(temp, ">")
 	r := strings.LastIndex(temp, "<")
 	diffDesc := temp[l+1 : r]
-	colorLoader.Load(diffColor)
-	m.DiffDesc = colorLoader.Colorized(diffDesc)
+
+	m.DiffDesc = diffDesc
 
 	value, _ := jsonutil.GetFloat("difficulty", raw, 0)
 	m.Diff, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", value), 64)
@@ -54,7 +51,7 @@ func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 	m.ArmorAcid, _ = jsonutil.GetInt("armor_acid", raw, -1)
 	m.ArmorFire, _ = jsonutil.GetInt("armor_fire", raw, -1)
 
-	m.Hp, _ = jsonutil.GetInt("hp", raw, 0)
+	m.HP, _ = jsonutil.GetInt("hp", raw, 0)
 	m.Speed, _ = jsonutil.GetInt("speed", raw, 0)
 
 	m.Volume, _ = jsonutil.GetString("volume", raw, "0 ml")
@@ -70,7 +67,7 @@ func (m *Monster) Bind(raw *gjson.Result, mo *gotext.Mo, po *gotext.Po) {
 	}
 }
 
-func (m *Monster) CliView(po *gotext.Po) string {
+func (m *VO) CliView(po *gotext.Po) string {
 	template := `
 %s %s(%s)
 ---
@@ -92,10 +89,17 @@ func (m *Monster) CliView(po *gotext.Po) string {
 %s: %d
 ---
 `
+
+	var colorLoader Color
+	colorLoader.Load(m.SymbolColor)
+	m.Symbol = colorLoader.Colorized(m.Symbol)
+	colorLoader.Load(m.DiffColor)
+	m.DiffDesc = colorLoader.Colorized(m.DiffDesc)
+
 	res := fmt.Sprintf(template,
 		m.Symbol, m.Name, m.ID, m.Mod,
-		m.DiffDesc, m.Diff, m.Desc,
-		i18n.TranUI("HP", po), m.Hp, i18n.TranUI("Speed", po), m.Speed,
+		m.DiffDesc, m.Diff, m.Description,
+		i18n.TranUI("HP", po), m.HP, i18n.TranUI("Speed", po), m.Speed,
 		i18n.TranUI("Volume", po), m.Volume, i18n.TranUI("Weight", po), m.Weight,
 		i18n.TranUI("Attack", po), m.Attack, i18n.TranUI("Attack cost", po), m.AttackCost,
 		i18n.TranUI("Aggression", po), m.Aggression, i18n.TranUI("Morale", po), m.Morale,
@@ -112,7 +116,7 @@ func (m *Monster) CliView(po *gotext.Po) string {
 	return res
 }
 
-func (m *Monster) JsonView() string {
+func (m *VO) JsonView() string {
 	bytes, _ := json.Marshal(m)
 	return string(bytes)
 }

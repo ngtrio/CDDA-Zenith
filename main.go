@@ -2,17 +2,23 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"github.com/leonelquinteros/gotext"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"runtime"
 	"strings"
+	"zenith/internal/view"
 
 	"zenith/internal/config"
 	"zenith/internal/core"
 	"zenith/internal/data"
 
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,7 +43,11 @@ func main() {
 
 	loadData(getVersion(), lang)
 
-	cli()
+	if options["--web-mode"] {
+		web()
+	} else {
+		cli()
+	}
 }
 
 func readOptions() (map[string]bool, string) {
@@ -48,6 +58,7 @@ func readOptions() (map[string]bool, string) {
 		"--debug-mode":     false,
 		"--update-now":     false,
 		"--disable-banner": false,
+		"--web-mode":       false,
 	}
 	lang := "zh_CN"
 	for _, arg := range args[1:] {
@@ -99,7 +110,7 @@ func configLog(debug bool) {
 	// log.SetReportCaller(true)
 	if debug {
 		log.SetLevel(log.DebugLevel)
-		fmt.Println("Debug mode is enabled")
+		fmt.Println("Home mode is enabled")
 	}
 }
 
@@ -162,4 +173,43 @@ func cli() {
 			fmt.Println(out)
 		}
 	}
+}
+
+func web() {
+	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Static("web"))
+
+	e.Renderer = view.NewTemplate()
+
+	e.GET("/", Home)
+	e.GET("/detail/:kw", Detail)
+
+	e.Logger.Fatal(e.Start(":1323"))
+}
+
+func Home(c echo.Context) error {
+	return c.Render(http.StatusOK, "home", []string{"111", "222", "333", "444"})
+}
+
+func Detail(c echo.Context) error {
+	param := c.Param("kw")
+	res := game.GetById(param, "json")
+	if len(res) == 0 {
+		res = game.GetByName(param, "json")
+	}
+
+	vos := make([]*view.VO, 0, len(res))
+	for _, s := range res {
+		vo := &view.VO{}
+		vos = append(vos, vo)
+		_ = json.Unmarshal([]byte(s), vo)
+	}
+
+	return c.Render(http.StatusOK, "detail", struct {
+		VOS []*view.VO
+		Po  *gotext.Po
+	}{
+		vos, game.Po,
+	})
 }

@@ -21,7 +21,7 @@ func (v *View) Render() string {
 	var obj Type
 	switch tp {
 	case "MONSTER":
-		obj = &Monster{
+		obj = &VO{
 			BaseType: BaseType{
 				Mod: v.Mod,
 			},

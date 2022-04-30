@@ -1,0 +1,42 @@
+{{define "detail"}}
+    <html data-theme="dark" lang="en">
+    <head>
+        <title>detail</title>
+        <link rel="stylesheet" href="../static/css/pico.min.css">
+        <link rel="stylesheet" href="../static/css/custom.css">
+    </head>
+
+    <body style="margin: auto">
+
+    {{$po := .Po}}
+    {{range $item := .VOS}}
+        <hgroup>
+            <h1>
+                <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
+                {{$item.Name}}
+                <sub><small>{{$item.ID}}</small></sub>
+            </h1>
+            <div>
+                <mark>{{$item.Mod}}</mark>
+                {{if eq $item.Type "MONSTER"}}
+                    <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
+                    <sub>{{.Monster.Diff}}</sub>
+                {{end}}
+            </div>
+            <div>
+                <i><small>{{$item.Description}}</small></i>
+            </div>
+        </hgroup>
+
+
+        {{if eq $item.Type "MONSTER"}}
+            {{template "monster" genMap "vo" $item "po" $po}}
+        {{else}}
+            aaa
+        {{end}}
+
+
+        <hr/>
+    {{end}}
+    </body>
+{{end}}
