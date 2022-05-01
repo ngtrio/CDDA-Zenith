@@ -17,3 +17,56 @@ coral {
 red {
     color: #d26363;
 }
+
+.home, .home:visited, .home:hover, .home:active {
+    text-decoration: none;
+    color: inherit;
+}
+
+#z-header {
+    position: sticky;
+    top: 0;
+    background-color: #11191f;
+    z-index: 1;
+}
+
+#type-button {
+    width: fit-content;
+    height: fit-content;
+    padding: 0;
+    margin-bottom: 0;
+    font-size: 15px;
+}
+
+#z-footer {
+    background-color: #11191f;
+    position: fixed;
+    height: 20px;
+    width: 100%;
+    top: calc(100vh - 20px);
+    display: none; /* 暂时不展示页脚 */
+}
+
+#z-input {
+    height: fit-content;
+    width: fit-content;
+    margin: 0;
+    padding: 0 0 0 5px;;
+    font-size: 15px;
+}
+
+label {
+    /* Other styling... */
+    text-align: right;
+    clear: both;
+    float: right;
+    margin-right: 15px;
+}
+
+#z-select {
+    width: fit-content;
+    height: fit-content;
+    margin: 0;
+    padding: 0 35px 0 5px;
+    font-size: 15px;
+}

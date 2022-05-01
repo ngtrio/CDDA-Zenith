@@ -8,16 +8,17 @@
 
     <body style="margin: auto">
 
+    {{template "header" .}}
+
     {{$po := .Po}}
-    {{range $item := .VOS}}
+    {{range $item := .Data}}
         <hgroup>
             <h1>
                 <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
-                {{$item.Name}}
-                <sub><small>{{$item.ID}}</small></sub>
+                {{$item.Name}} <sub><small>{{$item.ID}}</small></sub>
             </h1>
             <div>
-                <mark>{{$item.Mod}}</mark>
+                <mark>{{$item.ModName}}</mark>
                 {{if eq $item.Type "MONSTER"}}
                     <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
                     <sub>{{.Monster.Diff}}</sub>
@@ -39,4 +40,6 @@
         <hr/>
     {{end}}
     </body>
+
+    {{template "footer" .}}
 {{end}}

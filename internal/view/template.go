@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/labstack/echo"
 	"github.com/leonelquinteros/gotext"
+	"github.com/tidwall/gjson"
 	"html/template"
 	"io"
 	"zenith/internal/i18n"
@@ -21,6 +22,7 @@ func NewTemplate() *Template {
 			"genMap":       GenMap,
 			"tranUI":       TranUI,
 			"html":         Html,
+			"getJsonField": GetJsonField,
 		}).ParseGlob("web/template/*.html")),
 	}
 
@@ -69,4 +71,8 @@ func TranUI(word string, po *gotext.Po) string {
 
 func Html(str string) template.HTML {
 	return template.HTML(str)
+}
+
+func GetJsonField(json *gjson.Result, field string) string {
+	return json.Get(field).String()
 }

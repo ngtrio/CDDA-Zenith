@@ -1,0 +1,71 @@
+{{define "header"}}
+    <head>
+        <link rel="stylesheet" href="../static/css/pico.min.css">
+        <link rel="stylesheet" href="../static/css/custom.css">
+    </head>
+
+    {{$updateAt := .UpdateAt}}
+    {{$po := .Po}}
+
+    <div id="z-header">
+        <hgroup style="text-align: center; margin-bottom: 0">
+            <h2>
+                <a class="home" href="/">
+                    Zenith
+                </a>
+            </h2>
+            <i>Powerful weapon for your "Cataclysm: Dark Days Ahead" tour!</i>
+            <div>
+                <small>
+                    <small>{{tranUI "Updated at" $po}}: {{$updateAt}} -
+                        <a href="https://github.com/CleverRaven/Cataclysm-DDA/commit/{{.Commit}}">{{.Commit}}</a>
+                    </small>
+                </small>
+            </div>
+        </hgroup>
+
+
+        <div>
+            {{if eq .Path "/list"}}
+                {{$cur_page := .Data.CurPage}}
+                {{$total_page := .Data.TotalPage}}
+                {{$pre_disable := "disabled"}}
+                {{$next_disable := "disabled"}}
+                {{if gt .Data.PrevPage 0}}
+                    {{$pre_disable = ""}}
+                {{end}}
+                {{if le .Data.NextPage $total_page}}
+                    {{$next_disable = ""}}
+                {{end}}
+                <b>{{tranUI .Data.Type $po}}</b>
+                <small>
+                    Page: {{$cur_page}} / {{$total_page}}
+                </small>
+                <a href="/list?type={{.Data.Type}}&num={{.Data.Num}}&page={{.Data.PrevPage}}" id="type-button"
+                   role="button" {{$pre_disable}}>{{tranUI "Prev page" $po}}</a>
+                <a href="/list?type={{.Data.Type}}&num={{.Data.Num}}&page={{.Data.NextPage}}" id="type-button"
+                   role="button" {{$next_disable}}>{{tranUI "Next page" $po}}</a>
+                <a href="/list?type=MONSTER&num=20&page=1" id="type-button"
+                   role="button">{{tranUI "MONSTER" $po}}</a>
+            {{end}}
+
+            <input name="keyword" type="text" id="z-input">
+            <select id="z-select">
+                <option value="MONSTER" selected>{{tranUI "MONSTER" $po}}</option>
+            </select>
+            <button type="submit" role="button" id="type-button" onclick="search()">
+                {{tranUI "Search" $po}}
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function search() {
+            let keyword = document.getElementById('z-input').value
+            let type = document.getElementById('z-select').value
+            if (keyword.length > 0) {
+                window.location.href = '/search?keyword=' + keyword + '&type=' + type
+            }
+        }
+    </script>
+{{end}}
