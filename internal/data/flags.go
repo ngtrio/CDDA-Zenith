@@ -1,6 +1,6 @@
 package data
 
-var Flags map[string]string = map[string]string{"SEES": "It can see you (and will run/follow).",
+var Flags = map[string]string{"SEES": "It can see you (and will run/follow).",
 	"HEARS":                   "It can hear you.",
 	"GOODHEARING":             "Pursues sounds more than most monsters.",
 	"SMELLS":                  "It can smell you.",

@@ -12,23 +12,24 @@ type Type interface {
 }
 
 type BaseType struct {
-	Mod    string `json:"mod"`
-	ID     string `json:"id"`
-	Type   string `json:"type"`
-	Name   string `json:"name"`
-	Desc   string `json:"description"`
-	Symbol string `json:"symbol"`
+	Mod         string `json:"mod"`
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Symbol      string `json:"symbol"`
+	SymbolColor string `json:"symbol_color"`
 }
 
 type Monster struct {
-	BaseType
+	DiffColor   string   `json:"diff_color"`
 	AttackCost  int64    `json:"attack_cost"`
 	BleedRate   int64    `json:"bleed_rate"`
 	DiffDesc    string   `json:"diff_desc"`
 	Diff        float64  `json:"difficulty"`
 	Volume      string   `json:"volume"`
 	Weight      string   `json:"weight"`
-	Hp          int64    `json:"hp"`
+	HP          int64    `json:"hp"`
 	Speed       int64    `json:"speed"`
 	Attack      string   `json:"attack"`
 	Aggression  int64    `json:"aggression"`
@@ -42,4 +43,9 @@ type Monster struct {
 	VisionDay   int64    `json:"vision_day"`
 	VisionNight int64    `json:"vision_night"`
 	FlagsDesc   []string `json:"flags_description"`
+}
+
+type VO struct {
+	BaseType
+	Monster
 }

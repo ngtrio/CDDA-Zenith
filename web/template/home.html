@@ -1,0 +1,56 @@
+{{define "home"}}
+    <html data-theme="dark" lang="en">
+    <head>
+        <title>debug</title>
+        <link rel="stylesheet" href="../static/css/pico.min.css">
+
+    </head>
+
+    <body>
+
+    <hgroup style="text-align: center">
+        <h2>Zenith</h2>
+        <i>Powerful weapon for your "Cataclysm: Dark Days Ahead" tour!</i>
+    </hgroup>
+
+
+    <a href="/detail">go to detail</a>
+    <table>
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Heading</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {{range $val := .}}
+            <tr>
+                <th scope="row">1</th>
+                <td>{{$val}}</td>
+                <td>{{$val}}</td>
+                <td>{{$val}}</td>
+                <td>{{$val}}</td>
+                <td>{{$val}}</td>
+            </tr>
+        {{end}}
+
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="col">#</th>
+            <td scope="col">Total</td>
+            <td scope="col">Total</td>
+            <td scope="col">Total</td>
+            <td scope="col">Total</td>
+            <td scope="col">Total</td>
+        </tr>
+        </tfoot>
+    </table>
+    </body>
+    </html>
+{{end}}

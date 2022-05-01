@@ -81,8 +81,9 @@ func processMonsterDiff(json *gjson.Result) {
 	visionDay, _ := jsonutil.GetInt("vision_day", json, 0)
 	visionNight, _ := jsonutil.GetInt("vision_night", json, 0)
 
+	// https://github.com/CleverRaven/Cataclysm-DDA/blob/c5953acae3bb4a0b2b51ddf23ea695f41079d2a8/src/monstergenerator.cpp#L1064
 	difficulty := float64((meleeSkill+1)*meleeDice*(bonusCut+meleeDiceSides))*0.04 +
-		float64((dodge+1)*(3+armorBash+armorCut))*0.04 + float64((diff + int64(specialAttacksSize) + 8*int64(emitFieldsSize)))
+		float64((dodge+1)*(3+armorBash+armorCut))*0.04 + float64(diff+int64(specialAttacksSize)+8*int64(emitFieldsSize))
 
 	difficulty *= (float64(hp+speed-attackCost)+float64(morale+argo)*0.1)*0.01 + float64(visionDay+2*visionNight)*0.01
 	res, _ := sjson.Set(json.String(), "difficulty", difficulty)

@@ -68,25 +68,25 @@ msgid "Bleed rate"
 msgstr "流血速率"
 
 msgid "It can see you (and will run/follow)."
-msgstr ""
+msgstr "它拥有<coral>视觉</coral>，可能躲开或跟随你。"
 
 msgid "It can hear you."
-msgstr ""
+msgstr "它拥有<coral>听觉</coral>。"
 
 msgid "Pursues sounds more than most monsters."
 msgstr ""
 
 msgid "It can smell you."
-msgstr ""
+msgstr "它拥有<coral>嗅觉</coral>。"
 
 msgid "Keen sense of smell."
 msgstr ""
 
 msgid "Stumbles in its movement."
-msgstr ""
+msgstr "它<blue>步履蹒跚</blue>。"
 
 msgid "Warm blooded."
-msgstr ""
+msgstr "它是温血生物。"
 
 msgid "Is a nemesis monster"
 msgstr ""
@@ -95,25 +95,25 @@ msgid "Headshots not allowed!"
 msgstr ""
 
 msgid "It's one size smaller for ranged attacks no less then MS_TINY"
-msgstr ""
+msgstr "它不易被远程攻击击中。"
 
 msgid "Its attacks may grab you!"
-msgstr ""
+msgstr "它的攻击能<red>抓住</red>你。"
 
 msgid "Bashes down doors."
-msgstr ""
+msgstr "它能<red>破坏</red>门。"
 
 msgid "Bashes down walls and more. (2.5x bash multiplier where base is the critter's max melee bashing)"
-msgstr ""
+msgstr "它能<red>破坏</red>墙壁等建筑。"
 
 msgid "Tunnels through just about anything (15x bash multiplier: dark wyrms' bash skill 12->180)"
 msgstr ""
 
 msgid "Poisonous to eat."
-msgstr ""
+msgstr "它吃起来<green>有毒</green>。"
 
 msgid "Attack may poison the player."
-msgstr ""
+msgstr "它的攻击可能使你<green>中毒</green>。"
 
 msgid "Attack may severely poison the player."
 msgstr ""
@@ -140,7 +140,7 @@ msgid "Treats water as 50 movement point terrain."
 msgstr ""
 
 msgid "Attacks other monsters."
-msgstr ""
+msgstr "它会攻击其他怪物。"
 
 msgid "Is an animal for purposes of the Animal Empathy trait."
 msgstr ""
@@ -152,10 +152,10 @@ msgid "Dies in full sunlight."
 msgstr ""
 
 msgid "Shocks unarmed attackers."
-msgstr ""
+msgstr "能<red>电击</red>无防护的攻击者。"
 
 msgid "Immune to acid."
-msgstr ""
+msgstr "对酸免疫。"
 
 msgid "Leaves a trail of acid."
 msgstr ""
@@ -236,13 +236,13 @@ msgid "It's a live human as long as it's alive."
 msgstr ""
 
 msgid "Creature can't drown and is unharmed by gas smoke or poison."
-msgstr ""
+msgstr "它不会被淹死，也不会被气体所伤害。"
 
 msgid "Monster catches fire burns and spreads fire to nearby objects."
 msgstr ""
 
 msgid "Monster corpse will revive after a short period of time."
-msgstr ""
+msgstr "它的尸体能在一小段时间后<red>复活</red>。"
 
 msgid "May produce chitin when butchered."
 msgstr ""
@@ -290,13 +290,13 @@ msgid "May produce a CBM or two from bionics_subs and a power CBM when butchered
 msgstr ""
 
 msgid "Any clothing it drops will be filthy. The squeamish trait prevents wearing clothing with this flag one can't craft anything from filthy components and wearing filthy clothes may result in infection if hit in melee."
-msgstr ""
+msgstr "它掉落的衣物将是<brown>肮脏</brown>的。"
 
 msgid "It is fishable."
 msgstr ""
 
 msgid "Gets help from monsters around it when bashing."
-msgstr ""
+msgstr "它们会联合起来摧毁物品。"
 
 msgid "Groups together and forms loose packs."
 msgstr ""
@@ -317,10 +317,10 @@ msgid "Monster will try to keep tracking_distance number of tiles between it and
 msgstr ""
 
 msgid "Can push creatures out of its way."
-msgstr ""
+msgstr "它能推开道路上的其他生物。"
 
 msgid "Monsters that can push vehicles out of their way"
-msgstr ""
+msgstr "他能推开道路上的载具。"
 
 msgid "Monster becomes invisible if it's more than one tile away and the lighting on its tile is LL_LOW or less. Visibility is not affected by night vision."
 msgstr ""
