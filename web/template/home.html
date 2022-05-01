@@ -3,18 +3,14 @@
     <head>
         <title>debug</title>
         <link rel="stylesheet" href="../static/css/pico.min.css">
-
     </head>
-
     <body>
 
-    <hgroup style="text-align: center">
-        <h2>Zenith</h2>
-        <i>Powerful weapon for your "Cataclysm: Dark Days Ahead" tour!</i>
-    </hgroup>
-
+    {{template "header" .}}
 
     <a href="/detail">go to detail</a>
+    <a href="/list?type=MONSTER&num=10&page=1">go to list</a>
+
     <table>
         <thead>
         <tr>
@@ -27,18 +23,30 @@
         </tr>
         </thead>
         <tbody>
-
-        {{range $val := .}}
-            <tr>
-                <th scope="row">1</th>
-                <td>{{$val}}</td>
-                <td>{{$val}}</td>
-                <td>{{$val}}</td>
-                <td>{{$val}}</td>
-                <td>{{$val}}</td>
-            </tr>
-        {{end}}
-
+        <tr>
+            <th scope="row">1</th>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+        </tr>
+        <tr>
+            <th scope="row">1</th>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+        </tr>
+        <tr>
+            <th scope="row">1</th>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+            <td>Cell</td>
+        </tr>
         </tbody>
         <tfoot>
         <tr>
@@ -51,6 +59,9 @@
         </tr>
         </tfoot>
     </table>
+
+    {{template "footer" .}}
     </body>
     </html>
+
 {{end}}

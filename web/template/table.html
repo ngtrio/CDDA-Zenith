@@ -1,0 +1,36 @@
+{{define "table"}}
+    {{$po := .Po}}
+    {{$items := .Data.Items}}
+
+    <table>
+        <thead>
+        <tr>
+            <th style="white-space: nowrap" scope="col">{{tranUI "Mod" $po}}</th>
+            <th style="white-space: nowrap" scope="col">{{tranUI "Name" $po}}</th>
+            <th style="white-space: nowrap" scope="col">{{tranUI "Description" $po}}</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {{range $item := $items}}
+            <tr>
+                <td style="white-space: nowrap">
+                    <mark>{{$item.ModName}}</mark>
+                </td>
+                <td style="white-space: nowrap">
+                    <div>
+                        <a href="/detail/{{$item.ID}}">
+                            <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
+                            {{$item.Name}}
+                        </a>
+                    </div>
+                    <div>
+                        <small>{{$item.ID}}</small>
+                    </div>
+                </td>
+                <td><small>{{$item.Description}}</small></td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+{{end}}

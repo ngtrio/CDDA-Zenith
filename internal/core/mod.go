@@ -1,6 +1,7 @@
 package core
 
 import (
+	"zenith/internal/constdef"
 	"zenith/internal/i18n"
 	"zenith/internal/loader"
 	"zenith/pkg/jsonutil"
@@ -17,8 +18,9 @@ type Mod struct {
 	Description  string
 	Path         string
 	Dependencies []string
-	IdMap        map[string][]*gjson.Result
-	NameMap      map[string][]*gjson.Result
+	IdMap        map[string][]*gjson.Result // id -> json
+	NameMap      map[string][]*gjson.Result // name -> json
+	TypeItems    map[string][]*gjson.Result // type -> jsons, for range search
 	TempData     map[string][]*gjson.Result
 	Loaded       bool
 }
@@ -31,10 +33,32 @@ func (mod *Mod) GetByName(name string) []*gjson.Result {
 	return mod.NameMap[name]
 }
 
+func (mod *Mod) GetByType(type_ string, num, page int) ([]*gjson.Result, int) {
+	if arr, has := mod.TypeItems[type_]; !has {
+		return nil, 0
+	} else {
+		total := len(arr)
+		totalPage := total / num
+		if total%num > 0 {
+			totalPage += 1
+		}
+		start := num * page
+		end := start + num - 1
+		if start >= total {
+			return nil, totalPage
+		}
+		if end > total {
+			end = total
+		}
+		return arr[start:end], totalPage
+	}
+}
+
 func (mod *Mod) Finalize(mo *gotext.Mo) {
 	for id, jsons := range mod.TempData {
 		for _, json := range jsons {
 			if !loader.IsAbstract(json) {
+				mod.commonProcess(json)
 				mod.processType(json)
 				mod.createIndex(id, json, mo)
 			}
@@ -43,13 +67,19 @@ func (mod *Mod) Finalize(mo *gotext.Mo) {
 	log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
 }
 
+func (mod *Mod) commonProcess(json *gjson.Result) {
+	jsonStr := json.String()
+	jsonutil.Set(&jsonStr, constdef.FieldModId, mod.ID)
+	*json = gjson.Parse(jsonStr)
+}
+
 func (mod *Mod) processType(json *gjson.Result) {
 	if type_, has := jsonutil.GetString("type", json, ""); !has {
 		log.Debugf("field type does not exist, json %s", json)
 		return
 	} else {
 		switch type_ {
-		case "MONSTER":
+		case constdef.TypeMonster:
 			processMonster(json)
 		}
 	}
@@ -113,6 +143,8 @@ func processMonsterDiff(json *gjson.Result) {
 
 func (mod *Mod) createIndex(id string, json *gjson.Result, mo *gotext.Mo) {
 	name := i18n.Tran("name", json, mo)
+	type_, _ := jsonutil.GetString("type", json, "")
 	mod.IdMap[id] = append(mod.IdMap[id], json)
 	mod.NameMap[name] = append(mod.NameMap[name], json)
+	mod.TypeItems[type_] = append(mod.TypeItems[type_], json)
 }

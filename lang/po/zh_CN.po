@@ -2,10 +2,31 @@ msgid "Type"
 msgstr "类型"
 
 msgid "Name"
-msgstr "名字"
+msgstr "名称"
+
+msgid "Mod"
+msgstr "模组"
+
+msgid "Symbol"
+msgstr "符号"
 
 msgid "Description"
 msgstr "描述"
+
+msgid "Updated at"
+msgstr "更新于"
+
+msgid "Next page"
+msgstr "下一页"
+
+msgid "Prev page"
+msgstr "上一页"
+
+msgid "MONSTER"
+msgstr "怪物"
+
+msgid "Search"
+msgstr "搜索"
 
 msgid "Body type"
 msgstr "体型"
@@ -397,7 +418,7 @@ msgstr ""
 msgid "This monster drops ammo. Should not be set for monsters that use pseudo ammo."
 msgstr ""
 
-msgid "It's immune to insecticide even though it's made of bug flesh ("iflesh")."
+msgid "It's immune to insecticide even though it's made of bug flesh (\"iflesh\")."
 msgstr ""
 
 msgid "Monster has any sort of ranged attack."

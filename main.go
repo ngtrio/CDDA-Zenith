@@ -2,15 +2,17 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"github.com/leonelquinteros/gotext"
+	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 	"zenith/internal/view"
 
 	"zenith/internal/config"
@@ -139,10 +141,12 @@ func getVersion() string {
 
 func loadData(version, lang string) {
 	game = core.Game{
-		Version: version,
-		Mods:    make(map[string]*core.Mod),
-		ModPath: config.BaseDir + "/data/mods",
-		Lang:    lang,
+		Commit:    strings.Split(strings.Split(version, "\n")[2], ": ")[1][:8],
+		UpdateAt:  time.Now().Format("2006-01-02 15:04:05.000 -07"),
+		Mods:      make(map[string]*core.Mod),
+		ModPath:   config.BaseDir + "/data/mods",
+		Lang:      lang,
+		TypeItems: make(map[string][]*gjson.Result),
 	}
 	game.Load(map[string]bool{})
 	fmt.Printf("Game version:\n%s\n", version)
@@ -165,12 +169,12 @@ func cli() {
 			os.Exit(0)
 		}
 
-		res := game.GetById(input, "cli")
+		res := game.GetById(input)
 		if len(res) == 0 {
-			res = game.GetByName(input, "cli")
+			res = game.GetByName(input)
 		}
 		for _, out := range res {
-			fmt.Println(out)
+			fmt.Println(out.CliView(game.Po))
 		}
 	}
 }
@@ -184,32 +188,101 @@ func web() {
 
 	e.GET("/", Home)
 	e.GET("/detail/:kw", Detail)
+	e.GET("/list", List)
+	e.GET("/search", Search)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
 func Home(c echo.Context) error {
-	return c.Render(http.StatusOK, "home", []string{"111", "222", "333", "444"})
+	return c.Redirect(http.StatusPermanentRedirect, "/list?type=MONSTER&num=20&page=1")
 }
 
 func Detail(c echo.Context) error {
 	param := c.Param("kw")
-	res := game.GetById(param, "json")
+	res := game.GetById(param)
 	if len(res) == 0 {
-		res = game.GetByName(param, "json")
+		res = game.GetByName(param)
 	}
 
-	vos := make([]*view.VO, 0, len(res))
-	for _, s := range res {
-		vo := &view.VO{}
-		vos = append(vos, vo)
-		_ = json.Unmarshal([]byte(s), vo)
+	return c.Render(http.StatusOK, "detail", wrapParam(c, res))
+}
+
+func List(c echo.Context) error {
+	numParam := c.QueryParam("num")
+	pageParam := c.QueryParam("page")
+	typeParam := c.QueryParam("type")
+
+	num, _ := strconv.ParseInt(numParam, 10, 32)
+	page, _ := strconv.ParseInt(pageParam, 10, 32)
+
+	if num <= 0 {
+		num = 10
 	}
 
-	return c.Render(http.StatusOK, "detail", struct {
-		VOS []*view.VO
-		Po  *gotext.Po
-	}{
-		vos, game.Po,
-	})
+	page = page - 1
+	if page < 0 {
+		page = 0
+	}
+
+	res, totalPage := game.GetByType(typeParam, int(num), int(page))
+
+	return c.Render(http.StatusOK, "list", wrapParam(c, genListParam(res, int(page+1), totalPage, numParam, typeParam)))
+}
+
+func Search(c echo.Context) error {
+	keyword := c.QueryParam("keyword")
+	tp := c.QueryParam("type")
+	if len(keyword) <= 0 {
+		return c.Render(http.StatusOK, "search", wrapParam(c, nil))
+	}
+
+	res := game.FuzzyGet(keyword, tp)
+	return c.Render(http.StatusOK, "search", wrapParam(c, tableParam{Items: res}))
+}
+
+type tableParam struct {
+	Items []*view.VO
+}
+
+type listParam struct {
+	tableParam
+	Type      string
+	Num       string
+	CurPage   int
+	TotalPage int
+	NextPage  int
+	PrevPage  int
+}
+
+func genListParam(items []*view.VO, curPage, totalPage int, num, type_ string) listParam {
+	return listParam{
+		tableParam: tableParam{
+			Items: items,
+		},
+		Type:      type_,
+		Num:       num,
+		CurPage:   curPage,
+		TotalPage: totalPage,
+		NextPage:  curPage + 1,
+		PrevPage:  curPage - 1,
+	}
+}
+
+type templateParam struct {
+	Path     string
+	Commit   string
+	UpdateAt string
+	Po       *gotext.Po
+	Data     any
+}
+
+func wrapParam(c echo.Context, data any) templateParam {
+	return templateParam{
+		Path:     c.Path(),
+		Commit:   game.Commit,
+		UpdateAt: game.UpdateAt,
+		Po:       game.Po,
+		Data:     data,
+	}
 }
