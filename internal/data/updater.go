@@ -34,7 +34,7 @@ func UpdateNow(useProxy bool) bool {
 		} else {
 			bar := progressbar.DefaultBytes(resp.ContentLength, "downloading")
 			io.Copy(io.MultiWriter(f, bar), resp.Body)
-			return deCompress()
+			return DeCompress()
 		}
 	}
 }
@@ -65,7 +65,7 @@ func getLatestUrl() (string, error) {
 	return link, nil
 }
 
-func deCompress() bool {
+func DeCompress() bool {
 	srcFile, err := os.Open(config.DownloadPath)
 	if err != nil {
 		log.Error(err)

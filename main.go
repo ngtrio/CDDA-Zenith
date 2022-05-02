@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/leonelquinteros/gotext"
+	"github.com/robfig/cron/v3"
 	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 	"zenith/internal/view"
 
@@ -24,7 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var game core.Game
+var game atomic.Value
 
 func main() {
 
@@ -40,10 +42,9 @@ func main() {
 	}
 
 	configLog(options["--debug-mode"])
-
 	download(options["--use-proxy"], options["--update-now"])
-
 	loadData(getVersion(), lang)
+	bgTask(options["--use-proxy"], lang)
 
 	if options["--web-mode"] {
 		web()
@@ -54,6 +55,8 @@ func main() {
 
 func readOptions() (map[string]bool, string) {
 	args := os.Args
+	fmt.Printf("options: %v\n", args)
+
 	res := map[string]bool{
 		"--help":           false,
 		"--use-proxy":      false,
@@ -77,6 +80,7 @@ func readOptions() (map[string]bool, string) {
 			}
 		}
 	}
+
 	return res, lang
 }
 
@@ -123,34 +127,48 @@ func download(useProxy, useLatest bool) bool {
 		}
 		return data.UpdateNow(useProxy)
 	}
+
+	_, err := os.Stat(config.BaseDir)
+	if err != nil {
+		_, err := os.Stat(config.DownloadPath)
+		if err != nil {
+			fmt.Println("Game data not found, download")
+			return data.UpdateNow(useProxy)
+		} else {
+			fmt.Println("Game data found compressed, decompress")
+			return data.DeCompress()
+		}
+	}
+
 	return true
 }
 
 func getVersion() string {
 	f, err := os.Open(config.BaseDir + "/VERSION.txt")
-	if err != nil {
-		if os.IsNotExist(err) {
-			fmt.Println("Game data is not found, try to use '--update-now' option.")
-			os.Exit(1)
-		}
-		os.Exit(0)
+	if err != nil && os.IsNotExist(err) {
+		fmt.Println("Game data is not found, try to use '--update-now' option.")
+		os.Exit(1)
 	}
+
 	bytes, _ := ioutil.ReadAll(f)
 	return string(bytes)
 }
 
 func loadData(version, lang string) {
-	game = core.Game{
+	g := &core.Game{
 		Commit:    strings.Split(strings.Split(version, "\n")[2], ": ")[1][:8],
-		UpdateAt:  time.Now().Format("2006-01-02 15:04:05.000 -07"),
 		Mods:      make(map[string]*core.Mod),
 		ModPath:   config.BaseDir + "/data/mods",
 		Lang:      lang,
 		TypeItems: make(map[string][]*gjson.Result),
 	}
-	game.Load(map[string]bool{})
+	g.Load(map[string]bool{})
+	g.UpdateAt = time.Now().Format("2006-01-02 15:04:05.000 -07")
+
 	fmt.Printf("Game version:\n%s\n", version)
 	fmt.Printf("Language: %s\n\n", lang)
+
+	game.Store(g)
 }
 
 func cli() {
@@ -169,12 +187,12 @@ func cli() {
 			os.Exit(0)
 		}
 
-		res := game.GetById(input)
+		res := getGame().GetById(input)
 		if len(res) == 0 {
-			res = game.GetByName(input)
+			res = getGame().GetByName(input)
 		}
 		for _, out := range res {
-			fmt.Println(out.CliView(game.Po))
+			fmt.Println(out.CliView(getGame().Po))
 		}
 	}
 }
@@ -200,9 +218,9 @@ func Home(c echo.Context) error {
 
 func Detail(c echo.Context) error {
 	param := c.Param("kw")
-	res := game.GetById(param)
+	res := getGame().GetById(param)
 	if len(res) == 0 {
-		res = game.GetByName(param)
+		res = getGame().GetByName(param)
 	}
 
 	return c.Render(http.StatusOK, "detail", wrapParam(c, res))
@@ -225,7 +243,7 @@ func List(c echo.Context) error {
 		page = 0
 	}
 
-	res, totalPage := game.GetByType(typeParam, int(num), int(page))
+	res, totalPage := getGame().GetByType(typeParam, int(num), int(page))
 
 	return c.Render(http.StatusOK, "list", wrapParam(c, genListParam(res, int(page+1), totalPage, numParam, typeParam)))
 }
@@ -237,7 +255,7 @@ func Search(c echo.Context) error {
 		return c.Render(http.StatusOK, "search", wrapParam(c, nil))
 	}
 
-	res := game.FuzzyGet(keyword, tp)
+	res := getGame().FuzzyGet(keyword, tp)
 	return c.Render(http.StatusOK, "search", wrapParam(c, tableParam{Items: res}))
 }
 
@@ -280,9 +298,27 @@ type templateParam struct {
 func wrapParam(c echo.Context, data any) templateParam {
 	return templateParam{
 		Path:     c.Path(),
-		Commit:   game.Commit,
-		UpdateAt: game.UpdateAt,
-		Po:       game.Po,
+		Commit:   getGame().Commit,
+		UpdateAt: getGame().UpdateAt,
+		Po:       getGame().Po,
 		Data:     data,
 	}
+}
+
+func getGame() *core.Game {
+	return game.Load().(*core.Game)
+}
+
+func bgTask(useProxy bool, lang string) {
+	c := cron.New(cron.WithSeconds())
+	id, err := c.AddFunc("0 0 0 * * *", func() {
+		download(useProxy, true)
+		loadData(getVersion(), lang)
+	})
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("job id: %v\n", id)
+	c.Start()
 }

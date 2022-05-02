@@ -19,3 +19,6 @@
 .vscode
 zenith
 .idea
+rsync-exclude.txt
+sync.sh
+*.pem

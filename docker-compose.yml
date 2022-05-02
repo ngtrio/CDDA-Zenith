@@ -1,0 +1,17 @@
+version: '3'
+services:
+  zenith:
+    environment:
+      - TZ=Asia/Shanghai
+    build: '.'
+    ports:
+      - '1323:1323'
+#    expose:
+#      - '1323'
+  nginx:
+    build: './nginx'
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - zenith
