@@ -203,7 +203,7 @@ func (game *Game) inherit(mod *Mod, json *gjson.Result) bool {
 								// FIXME fully support delete
 								if !vInCur.IsArray() {
 									id := json.Get("id").String()
-									log.Warnf("delete field is not supported, id: %v", id)
+									log.Debugf("delete field is not supported, id: %v", id)
 									return true
 								}
 
