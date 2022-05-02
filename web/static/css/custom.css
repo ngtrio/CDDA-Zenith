@@ -40,11 +40,10 @@ red {
 
 #z-footer {
     background-color: #11191f;
-    position: fixed;
-    height: 20px;
+    /*position: fixed;*/
+    height: fit-content;
     width: 100%;
-    top: calc(100vh - 20px);
-    display: none; /* 暂时不展示页脚 */
+    /*top: calc(100vh - 20px);*/
 }
 
 #z-input {

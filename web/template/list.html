@@ -1,18 +1,17 @@
 {{define "list"}}
 
     <html data-theme="dark" lang="en">
-    <head>
-        <title>detail</title>
-        <link rel="stylesheet" href="../static/css/pico.min.css">
-        <link rel="stylesheet" href="../static/css/custom.css">
-    </head>
+    {{template "head"}}
+
     <body style="margin: auto">
 
-    {{template "header" .}}
+    {{template "navbar" .}}
 
     {{template "table" .}}
 
     {{template "footer" .}}
     </body>
+
+    </html>
 
 {{end}}

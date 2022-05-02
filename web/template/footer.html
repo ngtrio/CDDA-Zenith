@@ -1,14 +1,10 @@
 {{define "footer"}}
-    <head>
-        <link rel="stylesheet" href="../static/css/custom.css">
-        <link rel="stylesheet" href="../static/css/pico.min.css">
-    </head>
-
     {{$updateAt := .UpdateAt}}
     {{$po := .Po}}
 
     <div id="z-footer">
-        <hgroup style="text-align: center">
-        </hgroup>
+        <div onclick="window.location.href='https://github.com/ngtrio/CDDA-Zenith'" style="float: right; margin-right: 1%">
+            <span style="font-size: 16px">Github: </span><img alt="" src="../static/icon/GitHub-Mark/PNG/GitHub-Mark-Light-64px.png" style="height: 16px; width: 16px;margin-bottom: 3px">
+        </div>
     </div>
 {{end}}

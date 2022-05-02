@@ -1,12 +1,9 @@
 {{define "home"}}
     <html data-theme="dark" lang="en">
-    <head>
-        <title>debug</title>
-        <link rel="stylesheet" href="../static/css/pico.min.css">
-    </head>
+    {{template "head"}}
     <body>
 
-    {{template "header" .}}
+    {{template "navbar" .}}
 
     <a href="/detail">go to detail</a>
     <a href="/list?type=MONSTER&num=10&page=1">go to list</a>
