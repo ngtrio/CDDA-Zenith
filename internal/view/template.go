@@ -2,7 +2,7 @@ package view
 
 import (
 	"fmt"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/leonelquinteros/gotext"
 	"github.com/tidwall/gjson"
 	"html/template"

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/leonelquinteros/gotext"
 	"github.com/robfig/cron/v3"
 	"github.com/tidwall/gjson"
@@ -21,8 +22,7 @@ import (
 	"zenith/internal/core"
 	"zenith/internal/data"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -201,6 +201,7 @@ func web() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Static("web"))
+	e.Use(middleware.RateLimiterWithConfig(config.NewRateLimiterConfig()))
 
 	e.Renderer = view.NewTemplate()
 
