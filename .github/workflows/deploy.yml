@@ -1,0 +1,30 @@
+name: Zenith deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      git-ref:
+        description: Git Ref (Optional)
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRI_KEY}}
+          script: |
+            sudo rm -rf CDDA-Zenith
+            git clone https://github.com/ngtrio/CDDA-Zenith
+            cd CDDA-Zenith
+            sudo bash run.sh
