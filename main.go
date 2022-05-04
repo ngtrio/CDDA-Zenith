@@ -6,7 +6,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/leonelquinteros/gotext"
 	"github.com/robfig/cron/v3"
-	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -43,13 +42,13 @@ func main() {
 
 	configLog(options["--debug-mode"])
 	download(options["--use-proxy"], options["--update-now"])
-	loadData(getVersion(), lang)
-	bgTask(options["--use-proxy"], lang)
+	loadData(getVersion())
+	bgTask(options["--use-proxy"])
 
 	if options["--web-mode"] {
 		web()
 	} else {
-		cli()
+		cli(lang)
 	}
 }
 
@@ -154,24 +153,22 @@ func getVersion() string {
 	return string(bytes)
 }
 
-func loadData(version, lang string) {
+func loadData(version string) {
 	g := &core.Game{
 		Commit:    strings.Split(strings.Split(version, "\n")[2], ": ")[1][:8],
 		Mods:      make(map[string]*core.Mod),
 		ModPath:   config.BaseDir + "/data/mods",
-		Lang:      lang,
-		TypeItems: make(map[string][]*gjson.Result),
+		LangPacks: make(map[string]core.LangPack),
 	}
 	g.Load(map[string]bool{})
 	g.UpdateAt = time.Now().Format("2006-01-02 15:04:05.000 -07")
 
 	fmt.Printf("Game version:\n%s\n", version)
-	fmt.Printf("Language: %s\n\n", lang)
 
 	game.Store(g)
 }
 
-func cli() {
+func cli(lang string) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
@@ -187,12 +184,12 @@ func cli() {
 			os.Exit(0)
 		}
 
-		res := getGame().GetById(input)
+		res := getGame().Indexer.IdIndex("MONSTER", input, lang)
 		if len(res) == 0 {
-			res = getGame().GetByName(input)
+			res = getGame().Indexer.NameIndex("MONSTER", input, lang)
 		}
 		for _, out := range res {
-			fmt.Println(out.CliView(getGame().Po))
+			fmt.Println(out.CliView(getGame().LangPacks[lang].Po))
 		}
 	}
 }
@@ -206,7 +203,7 @@ func web() {
 	e.Renderer = view.NewTemplate()
 
 	e.GET("/", Home)
-	e.GET("/detail/:kw", Detail)
+	e.GET("/info/:mod/:type/:idName", Detail)
 	e.GET("/list", List)
 	e.GET("/search", Search)
 
@@ -218,19 +215,30 @@ func Home(c echo.Context) error {
 }
 
 func Detail(c echo.Context) error {
-	param := c.Param("kw")
-	res := getGame().GetById(param)
-	if len(res) == 0 {
-		res = getGame().GetByName(param)
+	modId := c.Param("mod")
+	tp := c.Param("type")
+	idName := c.Param("idName")
+	lang := c.QueryParam("lang")
+	if _, has := getGame().LangPacks[lang]; !has {
+		lang = "zh_CN"
 	}
 
-	return c.Render(http.StatusOK, "detail", wrapParam(c, res))
+	res := getGame().Indexer.ModIdIndex(modId, tp, idName, lang)
+	if res == nil {
+		res = getGame().Indexer.ModNameIndex(modId, tp, idName, lang)
+	}
+
+	return c.Render(http.StatusOK, "detail", wrapParam(c, res, lang))
 }
 
 func List(c echo.Context) error {
 	numParam := c.QueryParam("num")
 	pageParam := c.QueryParam("page")
 	typeParam := c.QueryParam("type")
+	lang := c.QueryParam("lang")
+	if _, has := getGame().LangPacks[lang]; !has {
+		lang = "zh_CN"
+	}
 
 	num, _ := strconv.ParseInt(numParam, 10, 32)
 	page, _ := strconv.ParseInt(pageParam, 10, 32)
@@ -239,29 +247,32 @@ func List(c echo.Context) error {
 		num = 10
 	}
 
-	page = page - 1
-	if page < 0 {
-		page = 0
+	if page <= 0 {
+		page = 1
 	}
 
-	res, totalPage := getGame().GetByType(typeParam, int(num), int(page))
-
-	return c.Render(http.StatusOK, "list", wrapParam(c, genListParam(res, int(page+1), totalPage, numParam, typeParam)))
+	res, totalPage := getGame().Indexer.RangeIndex(typeParam, int(num), int(page), lang)
+	return c.Render(http.StatusOK, "list", wrapParam(c, genListParam(res, int(page), totalPage, numParam, typeParam), lang))
 }
 
 func Search(c echo.Context) error {
 	keyword := c.QueryParam("keyword")
 	tp := c.QueryParam("type")
-	if len(keyword) <= 0 {
-		return c.Render(http.StatusOK, "search", wrapParam(c, nil))
+	lang := c.QueryParam("lang")
+	if _, has := getGame().LangPacks[lang]; !has {
+		lang = "zh_CN"
 	}
 
-	res := getGame().FuzzyGet(keyword, tp)
-	return c.Render(http.StatusOK, "search", wrapParam(c, tableParam{Items: res}))
+	if len(keyword) <= 0 {
+		return c.Render(http.StatusOK, "search", wrapParam(c, nil, lang))
+	}
+
+	res := getGame().Indexer.FuzzyNameIndex(tp, keyword, lang)
+	return c.Render(http.StatusOK, "search", wrapParam(c, tableParam{Items: res}, lang))
 }
 
 type tableParam struct {
-	Items []*view.VO
+	Items []*core.VO
 }
 
 type listParam struct {
@@ -274,7 +285,7 @@ type listParam struct {
 	PrevPage  int
 }
 
-func genListParam(items []*view.VO, curPage, totalPage int, num, type_ string) listParam {
+func genListParam(items []*core.VO, curPage, totalPage int, num, type_ string) listParam {
 	return listParam{
 		tableParam: tableParam{
 			Items: items,
@@ -296,12 +307,12 @@ type templateParam struct {
 	Data     any
 }
 
-func wrapParam(c echo.Context, data any) templateParam {
+func wrapParam(c echo.Context, data any, lang string) templateParam {
 	return templateParam{
 		Path:     c.Path(),
 		Commit:   getGame().Commit,
 		UpdateAt: getGame().UpdateAt,
-		Po:       getGame().Po,
+		Po:       getGame().LangPacks[lang].Po,
 		Data:     data,
 	}
 }
@@ -310,11 +321,11 @@ func getGame() *core.Game {
 	return game.Load().(*core.Game)
 }
 
-func bgTask(useProxy bool, lang string) {
+func bgTask(useProxy bool) {
 	c := cron.New(cron.WithSeconds())
 	id, err := c.AddFunc("0 0 0 * * *", func() {
 		download(useProxy, true)
-		loadData(getVersion(), lang)
+		loadData(getVersion())
 	})
 
 	if err != nil {

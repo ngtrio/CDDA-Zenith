@@ -44,7 +44,7 @@ func LoadJsonFromFile(file string) []*gjson.Result {
 		return nil
 	} else {
 		r := loadJson(bytes)
-		log.Debugf("[LOADED]: %s\n", file)
+		log.Tracef("[LOADED]: %s\n", file)
 		return r
 	}
 }

@@ -19,13 +19,13 @@
                 </td>
                 <td style="white-space: nowrap">
                     <div>
-                        <a href="/detail/{{$item.ID}}">
+                        <a href="/info/{{$item.ModId}}/{{$item.Type}}/{{$item.Id}}">
                             <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
                             {{$item.Name}}
                         </a>
                     </div>
                     <div>
-                        <small>{{$item.ID}}</small>
+                        <small>{{$item.Id}}</small>
                     </div>
                 </td>
                 <td><small>{{$item.Description}}</small></td>
