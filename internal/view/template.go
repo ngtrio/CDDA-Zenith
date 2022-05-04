@@ -7,6 +7,7 @@ import (
 	"github.com/tidwall/gjson"
 	"html/template"
 	"io"
+	"zenith/internal/core"
 	"zenith/internal/i18n"
 )
 
@@ -34,14 +35,14 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 func ParseFgColor(color string) string {
-	var l Color
+	var l core.Color
 	l.Load(color)
 
 	return l.FgColor
 }
 
 func ParseBgColor(color string) string {
-	var l Color
+	var l core.Color
 	l.Load(color)
 	return l.BgColor
 }
@@ -66,7 +67,7 @@ func GenMap(p ...any) (map[string]any, error) {
 }
 
 func TranUI(word string, po *gotext.Po) string {
-	return i18n.TranUI(word, po)
+	return i18n.TranCustom(word, po)
 }
 
 func Html(str string) template.HTML {

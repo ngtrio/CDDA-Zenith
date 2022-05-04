@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"zenith/internal/constdef"
 	"zenith/internal/loader"
-	"zenith/internal/view"
 	"zenith/pkg/fileutil"
 	"zenith/pkg/jsonutil"
 
@@ -20,10 +18,14 @@ type Game struct {
 	UpdateAt  string
 	Mods      map[string]*Mod // id -> mod
 	ModPath   string
-	Lang      string
-	Mo        *gotext.Mo
-	Po        *gotext.Po
-	TypeItems map[string][]*gjson.Result // map(type -> items)
+	LangPacks map[string]LangPack
+	Indexer   Indexer
+}
+
+type LangPack struct {
+	Lang string
+	Mo   *gotext.Mo
+	Po   *gotext.Po
 }
 
 func (game *Game) Load(targets map[string]bool) {
@@ -33,7 +35,7 @@ func (game *Game) Load(targets map[string]bool) {
 
 	for _, mod := range game.Mods {
 		if len(targets) > 0 {
-			if _, ok := targets[mod.ID]; ok && !mod.Loaded {
+			if _, ok := targets[mod.Id]; ok && !mod.Loaded {
 				game.doLoad(mod)
 			}
 		} else {
@@ -75,14 +77,11 @@ func (game *Game) preLoad() error {
 						}
 
 						mod := &Mod{
-							ID:           id,
+							Id:           id,
 							Name:         modInfo.Get("name").String(),
 							Description:  modInfo.Get("description").String(),
 							Path:         path,
 							Dependencies: dependencies,
-							IdMap:        make(map[string][]*gjson.Result),
-							NameMap:      make(map[string][]*gjson.Result),
-							TypeItems:    make(map[string][]*gjson.Result),
 							TempData:     make(map[string][]*gjson.Result),
 							Loaded:       false,
 						}
@@ -118,23 +117,12 @@ func (game *Game) doLoad(mod *Mod) {
 	mod.Loaded = true
 }
 
-func (game *Game) postLoad() {
-	game.Mo = loader.LoadMo(game.Lang)
-	game.Po = loader.LoadPo(game.Lang)
-
-	for _, mod := range game.Mods {
-		mod.Finalize(game.Mo)
-		for t, i := range mod.TypeItems {
-			game.TypeItems[t] = append(game.TypeItems[t], i...)
-		}
-	}
-}
-
 func (game *Game) processModData(mod *Mod, jsons []*gjson.Result) {
 	for _, json := range jsons {
 		id := getId(json)
+		tp := getType(json)
 		if id == "" {
-			log.Debugf("id not found, json: %s", json.String())
+			log.Debugf("id not found, tp: %s", tp)
 			continue
 		}
 
@@ -146,13 +134,31 @@ func (game *Game) processModData(mod *Mod, jsons []*gjson.Result) {
 		mod.TempData[id] = append(tar, json)
 	}
 
-	for _, tempJsonList := range mod.TempData {
-		for _, tempJson := range tempJsonList {
+	for _, tempJsons := range mod.TempData {
+		for _, tempJson := range tempJsons {
 			if loader.NeedInherit(tempJson) {
 				game.inherit(mod, tempJson)
 			}
 		}
 	}
+}
+
+func (game *Game) postLoad() {
+	langs := []string{"en_US", "zh_CN"}
+	for _, lang := range langs {
+		game.LangPacks[lang] = LangPack{
+			Lang: lang,
+			Mo:   loader.LoadMo(lang),
+			Po:   loader.LoadPo(lang),
+		}
+	}
+
+	game.Indexer = NewMemIndexer(game.Mods, langs)
+	for _, mod := range game.Mods {
+		mod.Finalize(game.Indexer, game.LangPacks)
+	}
+
+	game.Indexer.PrintItemNum()
 }
 
 func (game *Game) inherit(mod *Mod, json *gjson.Result) bool {
@@ -268,6 +274,11 @@ func getId(json *gjson.Result) string {
 	return ""
 }
 
+func getType(json *gjson.Result) string {
+	tp, _ := jsonutil.GetString("type", json, "")
+	return tp
+}
+
 func inheritRelative(jsonStr *string, par *gjson.Result, json *gjson.Result, path string) {
 	json.Get(path).ForEach(func(k, v gjson.Result) bool {
 
@@ -309,112 +320,9 @@ func inheritProportional(jsonStr *string, par *gjson.Result, json *gjson.Result,
 func isInAllowList(json *gjson.Result) bool {
 	type_, _ := jsonutil.GetString("type", json, "")
 
-	// TODO add new type here
-	allowList := map[string]bool{"MONSTER": true}
+	// TODO add new type, step 1
+	allowList := map[string]bool{
+		"MONSTER":        true,
+		"monster_attack": true}
 	return allowList[type_]
-}
-
-func (game *Game) GetById(id string) []*view.VO {
-	return game.GetByModAndId("", id)
-}
-
-func (game *Game) GetByModAndId(modId, id string) []*view.VO {
-	jsons := make(map[string][]*gjson.Result)
-	if modId == "" {
-		for _, mod := range game.Mods {
-			jsons[mod.ID] = append(jsons[mod.ID], mod.GetById(id)...)
-		}
-	} else {
-		mod := game.Mods[modId]
-		jsons[modId] = append(jsons[modId], mod.GetById(id)...)
-	}
-	return game.jsonToVO(jsons)
-}
-
-func (game *Game) GetByName(name string) []*view.VO {
-	return game.GetByModAndName("", name)
-}
-
-func (game *Game) GetByModAndName(modId, name string) []*view.VO {
-	jsons := make(map[string][]*gjson.Result)
-	if modId == "" {
-		for _, mod := range game.Mods {
-			jsons[mod.ID] = append(jsons[mod.ID], mod.GetByName(name)...)
-		}
-	} else {
-		mod := game.Mods[modId]
-		jsons[modId] = append(jsons[modId], mod.GetByName(name)...)
-	}
-	return game.jsonToVO(jsons)
-}
-
-func (game *Game) GetByType(type_ string, num, page int) ([]*view.VO, int) {
-	return game.GetByModAndType("", type_, num, page)
-}
-
-func (game *Game) GetByModAndType(modId, type_ string, num, page int) (res []*view.VO, totalPage int) {
-	jsons := make(map[string][]*gjson.Result)
-	if modId == "" {
-		if arr, has := game.TypeItems[type_]; !has {
-			return
-		} else {
-			total := len(arr)
-			totalPage = total / num
-			if total%num > 0 {
-				totalPage += 1
-			}
-			start := num * page
-			end := start + num - 1
-			if start >= total {
-				return
-			}
-			if end > total {
-				end = total
-			}
-
-			for i := start; i < end; i++ {
-				modId, _ = jsonutil.GetString(constdef.FieldModId, arr[i], "")
-				jsons[modId] = append(jsons[modId], arr[i])
-			}
-		}
-	} else {
-		if m, has := game.Mods[modId]; has {
-			jsons[modId], totalPage = m.GetByType(type_, num, page)
-		}
-	}
-
-	res = game.jsonToVO(jsons)
-	return
-}
-
-func (game *Game) FuzzyGet(keyword, tp string) []*view.VO {
-	if len(keyword) <= 0 {
-		return nil
-	}
-
-	res := make(map[string][]*gjson.Result, 0)
-	for _, mod := range game.Mods {
-		for name, items := range mod.NameMap {
-			if strings.Contains(name, keyword) {
-				res[mod.ID] = append(res[mod.ID], items...)
-			}
-		}
-	}
-
-	return game.jsonToVO(res)
-}
-
-func (game *Game) jsonToVO(jsonMap map[string][]*gjson.Result) []*view.VO {
-	vos := make([]*view.VO, 0)
-	for modId, jsons := range jsonMap {
-		mod := game.Mods[modId]
-		for _, json := range jsons {
-			tp, _ := jsonutil.GetString(constdef.FieldType, json, "")
-			vo := view.NewVO(mod.Name)
-			vo.Bind(tp, json, game.Mo, game.Po)
-			vos = append(vos, vo)
-		}
-	}
-
-	return vos
 }

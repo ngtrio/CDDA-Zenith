@@ -2,74 +2,39 @@ package core
 
 import (
 	"zenith/internal/constdef"
-	"zenith/internal/i18n"
 	"zenith/internal/loader"
 	"zenith/pkg/jsonutil"
 
-	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
 type Mod struct {
-	ID           string
+	Id           string
 	Name         string
 	Description  string
 	Path         string
 	Dependencies []string
-	IdMap        map[string][]*gjson.Result // id -> json
-	NameMap      map[string][]*gjson.Result // name -> json
-	TypeItems    map[string][]*gjson.Result // type -> jsons, for range search
 	TempData     map[string][]*gjson.Result
 	Loaded       bool
 }
 
-func (mod *Mod) GetById(id string) []*gjson.Result {
-	return mod.IdMap[id]
-}
-
-func (mod *Mod) GetByName(name string) []*gjson.Result {
-	return mod.NameMap[name]
-}
-
-func (mod *Mod) GetByType(type_ string, num, page int) ([]*gjson.Result, int) {
-	if arr, has := mod.TypeItems[type_]; !has {
-		return nil, 0
-	} else {
-		total := len(arr)
-		totalPage := total / num
-		if total%num > 0 {
-			totalPage += 1
-		}
-		start := num * page
-		end := start + num - 1
-		if start >= total {
-			return nil, totalPage
-		}
-		if end > total {
-			end = total
-		}
-		return arr[start:end], totalPage
-	}
-}
-
-func (mod *Mod) Finalize(mo *gotext.Mo) {
-	for id, jsons := range mod.TempData {
+func (mod *Mod) Finalize(indexer Indexer, langPack map[string]LangPack) {
+	for _, jsons := range mod.TempData {
 		for _, json := range jsons {
 			if !loader.IsAbstract(json) {
 				mod.commonProcess(json)
 				mod.processType(json)
-				mod.createIndex(id, json, mo)
+				mod.createIndex(indexer, json, langPack)
 			}
 		}
 	}
-	log.Debugf("[MOD]: %s is loaded, item num: %d, temp num: %d", mod.Name, len(mod.IdMap), len(mod.TempData))
 }
 
 func (mod *Mod) commonProcess(json *gjson.Result) {
 	jsonStr := json.String()
-	jsonutil.Set(&jsonStr, constdef.FieldModId, mod.ID)
+	jsonutil.Set(&jsonStr, constdef.FieldModId, mod.Id)
 	*json = gjson.Parse(jsonStr)
 }
 
@@ -141,10 +106,12 @@ func processMonsterDiff(json *gjson.Result) {
 	*json = gjson.Parse(res)
 }
 
-func (mod *Mod) createIndex(id string, json *gjson.Result, mo *gotext.Mo) {
-	name := i18n.Tran("name", json, mo)
-	type_, _ := jsonutil.GetString("type", json, "")
-	mod.IdMap[id] = append(mod.IdMap[id], json)
-	mod.NameMap[name] = append(mod.NameMap[name], json)
-	mod.TypeItems[type_] = append(mod.TypeItems[type_], json)
+func (mod *Mod) createIndex(indexer Indexer, json *gjson.Result, langPack map[string]LangPack) {
+	for _, pack := range langPack {
+		vo := NewVO(mod.Id, mod.Name)
+		vo.Bind(json, pack, mod)
+		indexer.AddRangeIndex(vo)
+		indexer.AddNameIndex(vo)
+		indexer.AddIdIndex(vo)
+	}
 }

@@ -1,7 +1,9 @@
 package constdef
 
 const (
-	TypeMonster = "MONSTER"
+	TypeMonster       = "MONSTER"
+	TypeMonsterAttack = "monster_attack"
+	TypeEffect        = "effect_type"
 )
 
 const (

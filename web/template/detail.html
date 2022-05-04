@@ -11,7 +11,7 @@
         <hgroup>
             <h1>
                 <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
-                {{$item.Name}} <sub><small>{{$item.ID}}</small></sub>
+                {{$item.Name}} <sub><small>{{$item.Id}}</small></sub>
             </h1>
             <div>
                 <mark>{{$item.ModName}}</mark>
@@ -26,6 +26,7 @@
         </hgroup>
 
 
+        {{/* TODO add new type, step 3 */}}
         {{if eq $item.Type "MONSTER"}}
             {{template "monster" genMap "vo" $item "po" $po}}
         {{else}}
