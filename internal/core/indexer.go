@@ -183,12 +183,22 @@ func (i *MemIndexer) FuzzyNameIndex(tp, keyword, lang string) []*VO {
 		return nil
 	}
 
-	res := make([]*VO, 0)
+	temp := make([]*VO, 0)
 	for _, modId := range i.modIds {
-		res = append(res, i.ModFuzzyNameIndex(modId, tp, keyword, lang)...)
+		temp = append(temp, i.ModFuzzyNameIndex(modId, tp, keyword, lang)...)
 	}
 
-	return res
+	exact := make([]*VO, 0)
+	left := make([]*VO, 0)
+	for _, vo := range temp {
+		if vo.Name == keyword {
+			exact = append(exact, vo)
+		} else {
+			left = append(left, vo)
+		}
+	}
+
+	return append(exact, left...)
 }
 
 func (i *MemIndexer) ModFuzzyNameIndex(mod, tp, keyword, lang string) []*VO {
@@ -273,7 +283,7 @@ func (i *MemIndexer) AddNameIndex(vo *VO) {
 		return
 	}
 
-	if _, has := i.i18nIndexes[lang][mod].nameIndexes[lang][tp]; !has {
+	if _, has := i.i18nIndexes[lang][mod].nameIndexes[tp]; !has {
 		i.i18nIndexes[lang][mod].nameIndexes[tp] = make(map[string][]*VO)
 	}
 
