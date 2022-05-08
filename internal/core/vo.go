@@ -12,6 +12,7 @@ import (
 	"zenith/internal/constdef"
 	"zenith/internal/data"
 	"zenith/internal/i18n"
+	"zenith/internal/util"
 	"zenith/pkg/jsonutil"
 )
 
@@ -65,11 +66,13 @@ type MonsterAttack struct {
 }
 
 type monsterAttack struct {
-	Id string `json:"id"`
+	Id    string `json:"id"`
+	ModId string `json:"mod_id"`
 	MonsterAttack
 }
 
 type monsterAttackEffect struct {
+	ModId    string `json:"mod_id"`
 	Id       string `json:"id"`
 	Duration int    `json:"duration"`
 	Effect
@@ -290,6 +293,7 @@ func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer)
 				ref := indexer.IdIndex(constdef.TypeMonsterAttack, attackId, langPack.Lang)
 				ma.MonsterAttack = ref[0].MonsterAttack
 				ma.Id = attackId
+				ma.ModId = ref[0].ModId
 			}
 		}
 		mas = append(mas, ma)
@@ -313,6 +317,7 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, i
 			es := indexer.IdIndex(constdef.TypeEffect, effectId, langPack.Lang)
 			e := es[0]
 			effects[i].Effect = e.Effect
+			effects[i].ModId = e.ModId
 		}
 	}
 	m.MonsterAttack = MonsterAttack{
@@ -325,6 +330,9 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, i
 func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
 	e := new(Effect)
 	_ = json.Unmarshal([]byte(raw.String()), e)
+	e.Names = util.Set(e.Names)
+	e.Descs = util.Set(e.Descs)
+
 	names := make([]string, 0)
 	descs := make([]string, 0)
 	for _, name := range e.Names {
@@ -334,6 +342,7 @@ func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack, mod *Mod, indexer 
 		descs = append(descs, i18n.TranString(desc, langPack.Mo))
 	}
 
+	m.Name = i18n.TranCustom(m.Id, langPack.Po)
 	m.Names = names
 	m.Descs = descs
 }

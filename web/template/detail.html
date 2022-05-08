@@ -14,16 +14,16 @@
                     <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
                     {{$item.Name}} <sub><small>{{$item.Id}}</small></sub>
                 </h1>
-                <h5>
+                <div>
                     <mark>{{$item.ModName}}</mark>
                     {{if eq $item.Type "MONSTER"}}
                         <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
                         <sub>{{.Monster.Diff}}</sub>
                     {{end}}
-                </h5>
-                <h6>
-                    <i>{{$item.Description}}</i>
-                </h6>
+                </div>
+                <div>
+                    <i><small>{{$item.Description}}</small></i>
+                </div>
             </hgroup>
 
 

@@ -1,24 +1,27 @@
 {{define "monster"}}
+
+    {{$po := .po}}
+
     <div class="grid">
-        <div>{{tranUI "Weight" .po}}: {{.vo.Monster.Weight}}</div>
-        <div>{{tranUI "Volume" .po}}: {{.vo.Monster.Volume}}</div>
+        <div>{{tranUI "Weight" $po}}: {{.vo.Monster.Weight}}</div>
+        <div>{{tranUI "Volume" $po}}: {{.vo.Monster.Volume}}</div>
         <div></div>
         <div></div>
         <div></div>
         <div></div>
     </div>
     <div class="grid">
-        <div>{{tranUI "Attack" .po}}: {{.vo.Monster.Attack}}</div>
-        <div>{{tranUI "Attack cost" .po}}: {{.vo.Monster.AttackCost}}</div>
+        <div>{{tranUI "Attack" $po}}: {{.vo.Monster.Attack}}</div>
+        <div>{{tranUI "Attack cost" $po}}: {{.vo.Monster.AttackCost}}</div>
         <div></div>
         <div></div>
         <div></div>
         <div></div>
     </div>
     <div class="grid">
-        <div>{{tranUI "HP" .po}}: {{.vo.Monster.HP}}</div>
-        <div>{{tranUI "Speed" .po}}: {{.vo.Monster.Speed}}</div>
-        <div>{{tranUI "Vision" .po}}: {{.vo.Monster.VisionDay}}({{tranUI "night" .po}}: {{.vo.Monster.VisionNight}}
+        <div>{{tranUI "HP" $po}}: {{.vo.Monster.HP}}</div>
+        <div>{{tranUI "Speed" $po}}: {{.vo.Monster.Speed}}</div>
+        <div>{{tranUI "Vision" $po}}: {{.vo.Monster.VisionDay}}({{tranUI "night" $po}}: {{.vo.Monster.VisionNight}}
             )
         </div>
         <div></div>
@@ -26,31 +29,67 @@
         <div></div>
     </div>
     <div class="grid">
-        <div>{{tranUI "Aggression" .po}}: {{.vo.Monster.Aggression}}</div>
-        <div>{{tranUI "Morale" .po}}: {{.vo.Monster.Morale}}</div>
-        <div>{{tranUI "Bleed rate" .po}}: {{.vo.Monster.BleedRate}}</div>
+        <div>{{tranUI "Aggression" $po}}: {{.vo.Monster.Aggression}}</div>
+        <div>{{tranUI "Morale" $po}}: {{.vo.Monster.Morale}}</div>
+        <div>{{tranUI "Bleed rate" $po}}: {{.vo.Monster.BleedRate}}</div>
         <div></div>
         <div></div>
         <div></div>
     </div>
     <div class="grid">
-        <div>{{tranUI "Armor bash" .po}}: {{.vo.Monster.ArmorBash}}</div>
-        <div>{{tranUI "Armor cut" .po}}: {{.vo.Monster.ArmorCut}}</div>
-        <div>{{tranUI "Armor stab" .po}}: {{.vo.Monster.ArmorStab}}</div>
+        <div>{{tranUI "Armor bash" $po}}: {{.vo.Monster.ArmorBash}}</div>
+        <div>{{tranUI "Armor cut" $po}}: {{.vo.Monster.ArmorCut}}</div>
+        <div>{{tranUI "Armor stab" $po}}: {{.vo.Monster.ArmorStab}}</div>
         <div></div>
         <div></div>
         <div></div>
     </div>
     <div class="grid">
-        <div>{{tranUI "Armor bullet" .po}}: {{.vo.Monster.ArmorBullet}}</div>
-        <div>{{tranUI "Armor acid" .po}}: {{.vo.Monster.ArmorAcid}}</div>
-        <div>{{tranUI "Armor fire" .po}}: {{.vo.Monster.ArmorFire}}</div>
+        <div>{{tranUI "Armor bullet" $po}}: {{.vo.Monster.ArmorBullet}}</div>
+        <div>{{tranUI "Armor acid" $po}}: {{.vo.Monster.ArmorAcid}}</div>
+        <div>{{tranUI "Armor fire" $po}}: {{.vo.Monster.ArmorFire}}</div>
         <div></div>
         <div></div>
         <div></div>
     </div>
-    <div>{{tranUI "Special attack" .po}}:</div>
-    {{json .vo}}
+
+    <hr/>
+
+    <div>{{tranUI "Special attack" $po}}:</div>
+    <ol>
+        {{range $d := .vo.Monster.SpecialAttacks}}
+            <li>
+                {{if not $d.ModId}}
+                    {{$d.Id}}
+                {{else}}
+                    <a href="/info/{{$d.ModId}}/monster_attack/{{$d.Id}}">{{$d.Id}}</a>
+                {{end}}
+                - {{tranUI "cool down" $po}}: {{$d.Cooldown}}T - {{tranUI "move cost" $po}}: {{$d.MoveCost}}
+                <ul>
+                    {{range $e := $d.Effects}}
+                        <li>
+                            <a href="/info/{{$e.ModId}}/effect_type/{{$e.Id}}">{{$e.Id}}</a>
+                            {{tranUI "duration" $po}}: {{$e.Duration}}T
+                            <ul>
+                                {{range $i, $name := $e.Names}}
+                                    <li>
+                                        {{$desc := index $e.Names $i}}
+                                        {{$name}} - {{$desc}}
+                                    </li>
+
+                                {{end}}
+                            </ul>
+                        </li>
+                    {{end}}
+                </ul>
+            </li>
+        {{else}}
+            <span>{{tranUI "None" $po}}</span>
+        {{end}}
+    </ol>
+
+    <hr/>
+    <div>{{tranUI "Flags" $po}}:</div>
     <ul>
         {{range $d := .vo.Monster.FlagsDesc}}
             <li>{{html $d}}</li>

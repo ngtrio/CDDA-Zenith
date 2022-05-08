@@ -9,7 +9,7 @@ import (
 )
 
 func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
-	if raw, has := jsonutil.GetField(field, json); !has {
+	if raw, has := jsonutil.GetField(field, json); !has || len(raw.String()) == 0 {
 		return ""
 	} else {
 		var res string
@@ -47,14 +47,14 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 }
 
 func TranString(raw string, mo *gotext.Mo) string {
-	if mo == nil {
+	if len(raw) == 0 || mo == nil {
 		return raw
 	}
 	return mo.Get(raw)
 }
 
 func TranCustom(raw string, po *gotext.Po) string {
-	if po == nil {
+	if len(raw) == 0 || po == nil {
 		return raw
 	}
 	return po.Get(raw)

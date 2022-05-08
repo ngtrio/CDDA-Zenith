@@ -31,11 +31,26 @@ msgstr "怪物"
 msgid "Search"
 msgstr "搜索"
 
+msgid "cool down"
+msgstr "冷却"
+
+msgid "move cost"
+msgstr "消耗"
+
+msgid "duration"
+msgstr "持续"
+
 msgid "Body type"
 msgstr "体型"
 
 msgid "Species"
 msgstr "物种"
+
+msgid "Flags"
+msgstr "特征"
+
+msgid "None"
+msgstr "无"
 
 msgid "Volume"
 msgstr "体积"
