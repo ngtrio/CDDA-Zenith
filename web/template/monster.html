@@ -51,6 +51,8 @@
             <div></div>
         </div>
         <br/>
+        <summary>特殊攻击</summary>
+        {{json .vo}}
         <ul>
             {{range $d := .vo.Monster.FlagsDesc}}
                 <li>{{html $d}}</li>

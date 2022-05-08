@@ -289,6 +289,7 @@ func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer)
 				attackId, _ := jsonutil.GetString("id", &sa, "")
 				ref := indexer.IdIndex(constdef.TypeMonsterAttack, attackId, langPack.Lang)
 				ma.MonsterAttack = ref[0].MonsterAttack
+				ma.Id = attackId
 			}
 		}
 		mas = append(mas, ma)

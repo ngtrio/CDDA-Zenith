@@ -7,35 +7,37 @@
     {{template "navbar" .}}
 
     {{$po := .Po}}
-    {{range $item := .Data}}
-        <hgroup>
-            <h1>
-                <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
-                {{$item.Name}} <sub><small>{{$item.Id}}</small></sub>
-            </h1>
-            <div>
-                <mark>{{$item.ModName}}</mark>
-                {{if eq $item.Type "MONSTER"}}
-                    <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
-                    <sub>{{.Monster.Diff}}</sub>
-                {{end}}
-            </div>
-            <div>
-                <i><small>{{$item.Description}}</small></i>
-            </div>
-        </hgroup>
+    <div style="margin-left: 1%; margin-right: 1%">
+        {{range $item := .Data}}
+            <hgroup>
+                <h1>
+                    <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
+                    {{$item.Name}} <sub><small>{{$item.Id}}</small></sub>
+                </h1>
+                <div>
+                    <mark>{{$item.ModName}}</mark>
+                    {{if eq $item.Type "MONSTER"}}
+                        <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
+                        <sub>{{.Monster.Diff}}</sub>
+                    {{end}}
+                </div>
+                <div>
+                    <i><small>{{$item.Description}}</small></i>
+                </div>
+            </hgroup>
 
 
-        {{/* TODO add new type, step 3 */}}
-        {{if eq $item.Type "MONSTER"}}
-            {{template "monster" genMap "vo" $item "po" $po}}
-        {{else}}
-            {{json $item}}
+            {{/* TODO add new type, step 3 */}}
+            {{if eq $item.Type "MONSTER"}}
+                {{template "monster" genMap "vo" $item "po" $po}}
+            {{else}}
+
+            {{end}}
+
+            <hr/>
         {{end}}
+    </div>
 
-
-        <hr/>
-    {{end}}
     </body>
 
     {{template "footer" .}}
