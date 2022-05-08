@@ -169,6 +169,28 @@ func (m *VO) JsonView() string {
 	return string(bytes)
 }
 
+func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack) {
+	m.Lang = langPack.Lang
+	m.Id = getId(raw)
+	m.Type = getType(raw)
+
+	m.Name = i18n.Tran("name", raw, langPack.Mo)
+	if m.Name == "" {
+		m.Name = i18n.TranCustom(m.Id, langPack.Po)
+	}
+
+	m.Description = i18n.Tran("description", raw, langPack.Mo)
+	m.ModName = i18n.TranString(m.ModName, langPack.Mo)
+
+	m.SymbolColor, _ = jsonutil.GetString("color", raw, "")
+	m.Symbol, _ = jsonutil.GetString("symbol", raw, "")
+	flags, _ := jsonutil.GetArray("flags", raw, make([]gjson.Result, 0))
+	for _, flag := range flags {
+		// trim "PATH_" on PATH_AVOID_DANGER_x
+		m.FlagsDesc = append(m.FlagsDesc, i18n.TranCustom(data.Flags[strings.TrimPrefix(flag.String(), "PATH_")], langPack.Po))
+	}
+}
+
 func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
 	meleeCut, _ := jsonutil.GetInt("melee_cut", raw, 0)
 	meleeDice, _ := jsonutil.GetInt("melee_dice", raw, 0)
@@ -273,28 +295,6 @@ func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer)
 	}
 
 	return mas
-}
-
-func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack) {
-	m.Lang = langPack.Lang
-	m.Id, _ = jsonutil.GetString("id", raw, "")
-	m.Type, _ = jsonutil.GetString("type", raw, "")
-
-	m.Name = i18n.Tran("name", raw, langPack.Mo)
-	if m.Name == "" {
-		m.Name = i18n.TranCustom(m.Id, langPack.Po)
-	}
-
-	m.Description = i18n.Tran("description", raw, langPack.Mo)
-	m.ModName = i18n.TranString(m.ModName, langPack.Mo)
-
-	m.SymbolColor, _ = jsonutil.GetString("color", raw, "")
-	m.Symbol, _ = jsonutil.GetString("symbol", raw, "")
-	flags, _ := jsonutil.GetArray("flags", raw, make([]gjson.Result, 0))
-	for _, flag := range flags {
-		// trim "PATH_" on PATH_AVOID_DANGER_x
-		m.FlagsDesc = append(m.FlagsDesc, i18n.TranCustom(data.Flags[strings.TrimPrefix(flag.String(), "PATH_")], langPack.Po))
-	}
 }
 
 func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
