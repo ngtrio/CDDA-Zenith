@@ -10,28 +10,30 @@ import (
 )
 
 // load data from paths
-func LoadJsonFromPaths(paths ...string) []*gjson.Result {
+func LoadJsonFromPaths(path string) [][]*gjson.Result {
+	var res [][]*gjson.Result
 	var jsons []*gjson.Result
-	for _, path := range paths {
-		if files, dirs, err := fileutil.Ls(path); err != nil {
-			log.Fatalf("read dir %s fail, err: %v", path, err)
-		} else {
-			sortPaths(files)
-			sortPaths(dirs)
-			// load normal json file
-			for _, file := range files {
-				res := LoadJsonFromFile(file)
-				jsons = append(jsons, res...)
 
-			}
+	if files, dirs, err := fileutil.Ls(path); err != nil {
+		log.Fatalf("read dir %s fail, err: %v", path, err)
+	} else {
+		sortPaths(files)
+		sortPaths(dirs)
 
-			for _, dir := range dirs {
-				res := LoadJsonFromPaths(dir)
-				jsons = append(jsons, res...)
-			}
+		// load normal json file
+		for _, file := range files {
+			res := LoadJsonFromFile(file)
+			jsons = append(jsons, res...)
+		}
+		res = append(res, jsons)
+
+		for _, dir := range dirs {
+			dirJsons := LoadJsonFromPaths(dir)
+			res = append(res, dirJsons...)
 		}
 	}
-	return jsons
+
+	return res
 }
 
 func LoadJsonFromFile(file string) []*gjson.Result {

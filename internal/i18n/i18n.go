@@ -1,10 +1,10 @@
 package i18n
 
 import (
+	log "github.com/sirupsen/logrus"
 	"zenith/pkg/jsonutil"
 
 	"github.com/leonelquinteros/gotext"
-	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
 
@@ -25,7 +25,7 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 				str = strSp
 				strPl = strSp
 			} else {
-				log.Warnf("name format is invalid: %s", raw.String())
+				log.Debugf("name format is invalid: %s", raw.String())
 			}
 
 			if ctxt != "" {

@@ -30,7 +30,7 @@
         {{if eq $item.Type "MONSTER"}}
             {{template "monster" genMap "vo" $item "po" $po}}
         {{else}}
-            aaa
+            {{json $item}}
         {{end}}
 
 

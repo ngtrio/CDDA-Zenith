@@ -33,7 +33,7 @@ type Indexer interface {
 	PrintItemNum()
 }
 
-func NewMemIndexer(mods map[string]*Mod, langs []string) Indexer {
+func NewMemIndexer(mods map[string]*Mod, langPacks map[string]LangPack) Indexer {
 	indexer := &MemIndexer{
 		BaseIndexer: BaseIndexer{
 			i18nIndexes: make(i18nIndexGroup),
@@ -42,7 +42,7 @@ func NewMemIndexer(mods map[string]*Mod, langs []string) Indexer {
 
 	for _, mod := range mods {
 		indexer.modIds = append(indexer.modIds, mod.Id)
-		for _, lang := range langs {
+		for lang := range langPacks {
 			if _, has := indexer.i18nIndexes[lang]; !has {
 				indexer.i18nIndexes[lang] = make(allModIndexGroup)
 			}

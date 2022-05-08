@@ -47,6 +47,14 @@ func (game *Game) Load(targets map[string]bool) {
 }
 
 func (game *Game) preLoad() error {
+	langs := []string{"en_US", "zh_CN"}
+	for _, lang := range langs {
+		game.LangPacks[lang] = LangPack{
+			Lang: lang,
+			Mo:   loader.LoadMo(lang),
+			Po:   loader.LoadPo(lang),
+		}
+	}
 
 	if _, dirs, err := fileutil.Ls(game.ModPath); err != nil {
 		return err
@@ -82,7 +90,7 @@ func (game *Game) preLoad() error {
 							Description:  modInfo.Get("description").String(),
 							Path:         path,
 							Dependencies: dependencies,
-							TempData:     make(map[string][]*gjson.Result),
+							TempData:     make(map[string]map[string]*gjson.Result),
 							Loaded:       false,
 						}
 
@@ -92,6 +100,8 @@ func (game *Game) preLoad() error {
 			}
 		}
 	}
+
+	game.Indexer = NewMemIndexer(game.Mods, game.LangPacks)
 
 	return nil
 }
@@ -110,54 +120,48 @@ func (game *Game) doLoad(mod *Mod) {
 			log.Warnf("%v's dependency: %v is not found.", mod.Name, dependency)
 		}
 	}
+
 	path := mod.Path
-	jsons := loader.LoadJsonFromPaths(path)
-	game.processModData(mod, jsons)
+	dirJsons := loader.LoadJsonFromPaths(path)
+
+	for _, jsons := range dirJsons {
+		temp := make([]*gjson.Result, 0)
+		for _, json := range jsons {
+			id := getId(json)
+			tp := getType(json)
+			if id == "" {
+				log.Debugf("id not found, tp: %s", tp)
+				continue
+			}
+
+			if !isInAllowList(json) {
+				continue
+			}
+
+			if _, has := mod.TempData[tp]; !has {
+				mod.TempData[tp] = make(map[string]*gjson.Result)
+			}
+			mod.TempData[tp][id] = json
+			temp = append(temp, json)
+		}
+
+		for _, json := range temp {
+			if loader.NeedInherit(json) {
+				if game.inherit(mod, json) {
+					mod.CreateIndex(game.Indexer, json, game.LangPacks)
+				} else {
+					log.Error("inherit failed")
+				}
+			} else {
+				mod.CreateIndex(game.Indexer, json, game.LangPacks)
+			}
+		}
+	}
 
 	mod.Loaded = true
 }
 
-func (game *Game) processModData(mod *Mod, jsons []*gjson.Result) {
-	for _, json := range jsons {
-		id := getId(json)
-		tp := getType(json)
-		if id == "" {
-			log.Debugf("id not found, tp: %s", tp)
-			continue
-		}
-
-		if !isInAllowList(json) {
-			continue
-		}
-
-		tar := mod.TempData[id]
-		mod.TempData[id] = append(tar, json)
-	}
-
-	for _, tempJsons := range mod.TempData {
-		for _, tempJson := range tempJsons {
-			if loader.NeedInherit(tempJson) {
-				game.inherit(mod, tempJson)
-			}
-		}
-	}
-}
-
 func (game *Game) postLoad() {
-	langs := []string{"en_US", "zh_CN"}
-	for _, lang := range langs {
-		game.LangPacks[lang] = LangPack{
-			Lang: lang,
-			Mo:   loader.LoadMo(lang),
-			Po:   loader.LoadPo(lang),
-		}
-	}
-
-	game.Indexer = NewMemIndexer(game.Mods, langs)
-	for _, mod := range game.Mods {
-		mod.Finalize(game.Indexer, game.LangPacks)
-	}
-
 	game.Indexer.PrintItemNum()
 }
 
@@ -167,99 +171,96 @@ func (game *Game) inherit(mod *Mod, json *gjson.Result) bool {
 		return false
 	}
 	parId := cf.String()
+	tp := getType(json)
+	id := getId(json)
 
-	flag := false
-	if pars := mod.TempData[parId]; pars != nil {
-		for _, par := range pars {
-			if par != json && par.Get("type").String() == json.Get("type").String() {
-				if loader.NeedInherit(par) {
-					game.inherit(mod, par)
-				}
+	if pars := mod.TempData[tp]; pars != nil {
+		if par, has := pars[parId]; has && par != json {
+			if loader.NeedInherit(par) && !game.inherit(mod, par) {
+				log.Warnf("inherit failed, id: %v, par id: %v", id, parId)
+				return false
+			}
 
-				jsonStr := par.String()
-				json.ForEach(func(k, v gjson.Result) bool {
-					field := k.String()
-					switch field {
-					case "relative":
-						inheritRelative(&jsonStr, par, json, "relative")
-					case "proportional":
-						inheritProportional(&jsonStr, par, json, "proportional")
-					case "extend":
-						v.ForEach(func(ck, cv gjson.Result) bool {
-							vInPar := par.Get(ck.String())
-							var res []interface{}
-							if vInPar.Exists() {
-								for _, elem := range vInPar.Array() {
-									res = append(res, elem.Value())
-								}
-							}
-							for _, elem := range cv.Array() {
+			jsonStr := par.String()
+			json.ForEach(func(k, v gjson.Result) bool {
+				field := k.String()
+				switch field {
+				case "relative":
+					inheritRelative(&jsonStr, par, json, "relative")
+				case "proportional":
+					inheritProportional(&jsonStr, par, json, "proportional")
+				case "extend":
+					v.ForEach(func(ck, cv gjson.Result) bool {
+						vInPar := par.Get(ck.String())
+						var res []interface{}
+						if vInPar.Exists() {
+							for _, elem := range vInPar.Array() {
 								res = append(res, elem.Value())
 							}
+						}
+						for _, elem := range cv.Array() {
+							res = append(res, elem.Value())
+						}
 
+						jsonutil.Set(&jsonStr, ck.String(), res)
+						return true
+					})
+				case "delete":
+					v.ForEach(func(ck, cv gjson.Result) bool {
+						vInCur := gjson.Get(jsonStr, ck.String())
+						if vInCur.Exists() {
+							var res []string
+
+							// FIXME fully support delete
+							if !vInCur.IsArray() {
+								id := json.Get("id").String()
+								log.Debugf("delete field is not supported, id: %v", id)
+								return true
+							}
+
+							for _, elem := range vInCur.Array() {
+								flag := false
+								for _, cvElem := range cv.Array() {
+									if elem.String() == cvElem.String() {
+										flag = true
+									}
+									break
+								}
+								if !flag {
+									res = append(res, elem.String())
+								}
+							}
 							jsonutil.Set(&jsonStr, ck.String(), res)
-							return true
-						})
-					case "delete":
-						v.ForEach(func(ck, cv gjson.Result) bool {
-							vInCur := gjson.Get(jsonStr, ck.String())
-							if vInCur.Exists() {
-								var res []string
+						}
 
-								// FIXME fully support delete
-								if !vInCur.IsArray() {
-									id := json.Get("id").String()
-									log.Debugf("delete field is not supported, id: %v", id)
-									return true
-								}
+						// we assume that delete is done from self
+						if par.Get(ck.String()).Exists() && !vInCur.Exists() {
+							log.Debugf("%s field delete is abnormal", json)
+						}
+						return true
+					})
 
-								for _, elem := range vInCur.Array() {
-									flag := false
-									for _, cvElem := range cv.Array() {
-										if elem.String() == cvElem.String() {
-											flag = true
-										}
-										break
-									}
-									if !flag {
-										res = append(res, elem.String())
-									}
-								}
-								jsonutil.Set(&jsonStr, ck.String(), res)
-							}
-
-							// we assume that delete is done from self
-							if par.Get(ck.String()).Exists() && !vInCur.Exists() {
-								log.Debugf("%s field delete is abnormal", json)
-							}
-							return true
-						})
-
-					case "copy-from":
-						// discard
-					default:
-						jsonutil.Set(&jsonStr, k.String(), v.Value())
-					}
-					return true
-				})
-				*json = gjson.Parse(jsonStr)
-				flag = true
-
-				break
-			}
+				case "copy-from":
+					// discard
+				default:
+					jsonutil.Set(&jsonStr, k.String(), v.Value())
+				}
+				return true
+			})
+			*json = gjson.Parse(jsonStr)
+			return true
 		}
 	}
 
-	if !flag {
-		for _, dp := range mod.Dependencies {
-			dpMod := game.Mods[dp]
-			if game.inherit(dpMod, json) {
-				break
-			}
+	for _, dp := range mod.Dependencies {
+		dpMod := game.Mods[dp]
+		if game.inherit(dpMod, json) {
+			return true
 		}
 	}
 
-	return true
+	log.Warnf("inherit failed, id: %v, par id: %v", id, parId)
+	return false
 }
 
 func getId(json *gjson.Result) string {
@@ -323,6 +324,8 @@ func isInAllowList(json *gjson.Result) bool {
 	// TODO add new type, step 1
 	allowList := map[string]bool{
 		"MONSTER":        true,
-		"monster_attack": true}
+		"monster_attack": true,
+		"effect_type":    true,
+	}
 	return allowList[type_]
 }

@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/leonelquinteros/gotext"
@@ -24,6 +25,7 @@ func NewTemplate() *Template {
 			"tranUI":       TranUI,
 			"html":         Html,
 			"getJsonField": GetJsonField,
+			"json":         Json,
 		}).ParseGlob("web/template/*.html")),
 	}
 
@@ -76,4 +78,8 @@ func Html(str string) template.HTML {
 
 func GetJsonField(json *gjson.Result, field string) string {
 	return json.Get(field).String()
+}
+func Json(data any) string {
+	bytes, _ := json.Marshal(data)
+	return string(bytes)
 }
