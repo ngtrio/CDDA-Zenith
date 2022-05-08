@@ -14,27 +14,29 @@
                     <span style="color: {{parseFgColor $item.SymbolColor}};background-color: {{parseBgColor $item.SymbolColor}}">{{$item.Symbol}}</span>
                     {{$item.Name}} <sub><small>{{$item.Id}}</small></sub>
                 </h1>
-                <div>
+                <h5>
                     <mark>{{$item.ModName}}</mark>
                     {{if eq $item.Type "MONSTER"}}
                         <span style="color: {{parseFgColor .Monster.DiffColor}};background-color: {{parseBgColor .Monster.DiffColor}}">{{.Monster.DiffDesc}}</span>
                         <sub>{{.Monster.Diff}}</sub>
                     {{end}}
-                </div>
-                <div>
-                    <i><small>{{$item.Description}}</small></i>
-                </div>
+                </h5>
+                <h6>
+                    <i>{{$item.Description}}</i>
+                </h6>
             </hgroup>
 
 
-            {{/* TODO add new type, step 3 */}}
-            {{if eq $item.Type "MONSTER"}}
-                {{template "monster" genMap "vo" $item "po" $po}}
-            {{else}}
+            <small>
+                {{/* TODO add new type, step 3 */}}
+                {{if eq $item.Type "MONSTER"}}
+                    {{template "monster" genMap "vo" $item "po" $po}}
+                {{else}}
 
-            {{end}}
+                {{end}}
 
-            <hr/>
+                <hr/>
+            </small>
         {{end}}
     </div>
 

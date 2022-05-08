@@ -13,6 +13,9 @@ msgstr "符号"
 msgid "Description"
 msgstr "描述"
 
+msgid "Special attack"
+msgstr "特殊攻击"
+
 msgid "Updated at"
 msgstr "更新于"
 
@@ -341,7 +344,7 @@ msgid "Can push creatures out of its way."
 msgstr "它能推开道路上的其他生物。"
 
 msgid "Monsters that can push vehicles out of their way"
-msgstr "他能推开道路上的载具。"
+msgstr "它能推开道路上的载具。"
 
 msgid "Monster becomes invisible if it's more than one tile away and the lighting on its tile is LL_LOW or less. Visibility is not affected by night vision."
 msgstr ""
