@@ -8,6 +8,7 @@ import (
 	"github.com/tidwall/gjson"
 	"html/template"
 	"io"
+	"zenith/internal/constdef"
 	"zenith/internal/core"
 	"zenith/internal/i18n"
 )
@@ -26,6 +27,7 @@ func NewTemplate() *Template {
 			"html":         Html,
 			"getJsonField": GetJsonField,
 			"json":         Json,
+			"isItem":       IsItem,
 		}).ParseGlob("web/template/*.html")),
 	}
 
@@ -82,4 +84,8 @@ func GetJsonField(json *gjson.Result, field string) string {
 func Json(data any) string {
 	bytes, _ := json.Marshal(data)
 	return string(bytes)
+}
+
+func IsItem(tp string) bool {
+	return constdef.ItemTypes[tp]
 }

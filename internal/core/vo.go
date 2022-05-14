@@ -22,16 +22,19 @@ type Type interface {
 	JsonView() string
 }
 
-type BaseType struct {
-	Lang        string `json:"lang"`
-	ModId       string `json:"mod_id"`
-	ModName     string `json:"mod_name"`
-	Id          string `json:"id"`
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Symbol      string `json:"symbol"`
-	SymbolColor string `json:"symbol_color"`
+type baseType struct {
+	Lang        string   `json:"lang"`
+	ModId       string   `json:"mod_id"`
+	ModName     string   `json:"mod_name"`
+	Id          string   `json:"id"`
+	Type        string   `json:"type"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Symbol      string   `json:"symbol"`
+	SymbolColor string   `json:"symbol_color"`
+	Volume      string   `json:"volume"`
+	Weight      string   `json:"weight"`
+	Material    []string `json:"material"`
 }
 
 type Monster struct {
@@ -40,8 +43,6 @@ type Monster struct {
 	BleedRate      int64            `json:"bleed_rate"`
 	DiffDesc       string           `json:"diff_desc"`
 	Diff           float64          `json:"difficulty"`
-	Volume         string           `json:"volume"`
-	Weight         string           `json:"weight"`
 	HP             int64            `json:"hp"`
 	Speed          int64            `json:"speed"`
 	Attack         string           `json:"attack"`
@@ -83,16 +84,60 @@ type Effect struct {
 	Descs []string `json:"desc"`
 }
 
+type Item struct {
+	baseType
+	baseItem
+}
+
+type baseItem struct {
+	Price     int64             `json:"price"`
+	Qualities []quality         `json:"qualities"`
+	CraftFrom map[string][]item `json:"craft_from"`
+	UnCraftTo map[string][]item `json:"un_craft_to"`
+}
+
+type sub struct {
+	ModId string `json:"modId"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	SType string `json:"s_type"`
+}
+
+type item struct {
+	sub
+	Num int64 `json:"num"`
+}
+
+type quality struct {
+	sub
+	Level int `json:"level"`
+}
+
+type Requirement struct {
+	Components [][]*item `json:"components"`
+	Tools      [][]*item `json:"tools"`
+	Qualities  []quality `json:"qualities"`
+}
+
+type Recipe struct {
+	Components [][]*item `json:"components"`
+	Tools      [][]*item `json:"tools"`
+	Qualities  []quality `json:"qualities"`
+}
+
 type VO struct {
-	BaseType
+	baseType
 	Monster
 	MonsterAttack
 	Effect
+	Item
+	Recipe
+	Requirement
 }
 
 func NewVO(modId, modName string) *VO {
 	return &VO{
-		BaseType: BaseType{
+		baseType: baseType{
 			ModId:   modId,
 			ModName: modName,
 		},
@@ -100,19 +145,23 @@ func NewVO(modId, modName string) *VO {
 }
 
 // default value see: https://github.com/CleverRaven/Cataclysm-DDA/blob/master/src/mtype.h
-func (m *VO) Bind(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
-	tp := getType(raw)
-
-	m.bindCommon(raw, langPack)
+func (m *VO) Bind(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.bindCommon(raw, langPack, mod, game)
 
 	// TODO add new type, step 2
-	switch tp {
-	case constdef.TypeMonster:
-		m.bindMonster(raw, langPack, mod, indexer)
-	case constdef.TypeMonsterAttack:
-		m.bindMonsterAttack(raw, langPack, mod, indexer)
-	case constdef.TypeEffect:
-		m.bindEffect(raw, langPack, mod, indexer)
+	switch tp := getType(raw); {
+	case tp == constdef.TypeMonster:
+		m.bindMonster(raw, langPack, mod, game)
+	case tp == constdef.TypeMonsterAttack:
+		m.bindMonsterAttack(raw, langPack, mod, game)
+	case tp == constdef.TypeEffect:
+		m.bindEffect(raw, langPack)
+	case tp == constdef.TypeRecipe || tp == constdef.TypeUnCraft:
+		m.bindRecipeAndUnCraft(raw, langPack, mod, game)
+	case tp == constdef.TypeRequirement:
+		m.bindRequirement(raw, langPack, mod, game)
+	case constdef.ItemTypes[tp]:
+		m.bindItem(raw, langPack, mod, game)
 	default:
 		log.Debugf("type %v is not supported yet", tp)
 	}
@@ -172,7 +221,7 @@ func (m *VO) JsonView() string {
 	return string(bytes)
 }
 
-func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack) {
+func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	m.Lang = langPack.Lang
 	m.Id = getId(raw)
 	m.Type = getType(raw)
@@ -190,11 +239,33 @@ func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack) {
 	flags, _ := jsonutil.GetArray("flags", raw, make([]gjson.Result, 0))
 	for _, flag := range flags {
 		// trim "PATH_" on PATH_AVOID_DANGER_x
-		m.FlagsDesc = append(m.FlagsDesc, i18n.TranCustom(data.Flags[strings.TrimPrefix(flag.String(), "PATH_")], langPack.Po))
+		flagDesc := fmt.Sprintf("%s(%s)", i18n.TranCustom(data.Flags[strings.TrimPrefix(flag.String(), "PATH_")], langPack.Po), flag.String())
+		m.FlagsDesc = append(m.FlagsDesc, flagDesc)
 	}
+
+	materials, _ := jsonutil.GetArray("material", raw, nil)
+	for _, material := range materials {
+		var mId string
+		if material.IsObject() {
+			mId = getType(&material)
+		} else {
+			mId = material.String()
+		}
+		ms := m.getFromIndex(game, mod, constdef.TypeMaterial, mId, langPack)
+		if len(ms) > 0 {
+			m.Material = append(m.Material, ms[0].Name)
+		} else {
+			m.Material = append(m.Material, mId)
+		}
+	}
+
+	volume, _ := jsonutil.GetString("volume", raw, "0 ml")
+	weight, _ := jsonutil.GetString("weight", raw, "0 kg")
+	m.Volume = volume
+	m.Weight = weight
 }
 
-func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
+func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	meleeCut, _ := jsonutil.GetInt("melee_cut", raw, 0)
 	meleeDice, _ := jsonutil.GetInt("melee_dice", raw, 0)
 	meleeDiceSides, _ := jsonutil.GetInt("melee_dice_sides", raw, 0)
@@ -220,8 +291,6 @@ func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, indexer
 	visionDay, _ := jsonutil.GetInt("vision_day", raw, 40)
 	visionNight, _ := jsonutil.GetInt("vision_night", raw, 1)
 	bleedRate, _ := jsonutil.GetInt("bleed_rate", raw, 100)
-	volume, _ := jsonutil.GetString("volume", raw, "0 ml")
-	weight, _ := jsonutil.GetString("weight", raw, "0 kg")
 
 	m.AttackCost = attackCost
 	m.BleedRate = bleedRate
@@ -236,8 +305,6 @@ func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, indexer
 	m.ArmorFire = armorFire
 	m.HP = int64(math.Max(1, float64(hp)))
 	m.Speed = speed
-	m.Volume = volume
-	m.Weight = weight
 	m.VisionDay = visionDay
 	m.VisionNight = visionNight
 
@@ -272,10 +339,10 @@ func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, indexer
 	r := strings.LastIndex(temp, "<")
 	m.DiffDesc = temp[l+1 : r]
 
-	m.SpecialAttacks = parseSpecialAttacks(raw.Get("special_attacks"), langPack, indexer)
+	m.SpecialAttacks = m.parseSpecialAttacks(raw.Get("special_attacks"), langPack, mod, game)
 }
 
-func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer) []*monsterAttack {
+func (m *VO) parseSpecialAttacks(field gjson.Result, langPack LangPack, mod *Mod, game *Game) []*monsterAttack {
 	var mas []*monsterAttack
 	for _, sa := range field.Array() {
 		ma := &monsterAttack{}
@@ -290,9 +357,13 @@ func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer)
 				ma.Cooldown, _ = jsonutil.GetInt("cooldown", &sa, 0)
 			} else {
 				attackId, _ := jsonutil.GetString("id", &sa, "")
-				ref := indexer.IdIndex(constdef.TypeMonsterAttack, attackId, langPack.Lang)
-				ma.MonsterAttack = ref[0].MonsterAttack
 				ma.Id = attackId
+
+				ref := m.getFromIndex(game, mod, constdef.TypeMonsterAttack, attackId, langPack)
+				if len(ref) == 0 {
+					continue
+				}
+				ma.MonsterAttack = ref[0].MonsterAttack
 				ma.ModId = ref[0].ModId
 			}
 		}
@@ -302,7 +373,7 @@ func parseSpecialAttacks(field gjson.Result, langPack LangPack, indexer Indexer)
 	return mas
 }
 
-func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
+func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	cooldown, _ := jsonutil.GetInt("cooldown", raw, 0)
 	moveCost, _ := jsonutil.GetInt("move_cost", raw, 0)
 
@@ -314,7 +385,10 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, i
 			effects[i] = new(monsterAttackEffect)
 			_ = json.Unmarshal([]byte(j.String()), effects[i])
 			effectId := effects[i].Id
-			es := indexer.IdIndex(constdef.TypeEffect, effectId, langPack.Lang)
+			es := m.getFromIndex(game, mod, constdef.TypeEffect, effectId, langPack)
+			if len(es) == 0 {
+				continue
+			}
 			e := es[0]
 			effects[i].Effect = e.Effect
 			effects[i].ModId = e.ModId
@@ -327,7 +401,7 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, i
 	}
 }
 
-func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack, mod *Mod, indexer Indexer) {
+func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack) {
 	e := new(Effect)
 	_ = json.Unmarshal([]byte(raw.String()), e)
 	e.Names = util.Set(e.Names)
@@ -345,4 +419,187 @@ func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack, mod *Mod, indexer 
 	m.Name = i18n.TranCustom(m.Id, langPack.Po)
 	m.Names = names
 	m.Descs = descs
+}
+
+func (m *VO) bindRequirement(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	// qualities
+	m.Requirement.Qualities = m.loadQualities(raw, langPack, mod, game)
+
+	// tools
+	tools := m.loadItems(raw, langPack, "tools", mod, game)
+
+	// components
+	components := m.loadItems(raw, langPack, "components", mod, game)
+
+	m.Requirement.Tools, m.Requirement.Components = tools, components
+	return
+}
+
+func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	usings, has := jsonutil.GetArray("using", raw, []gjson.Result{})
+	if has {
+		for _, using := range usings {
+			reqId := using.Array()[0].String()
+			reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, reqId, langPack)
+			if len(reqs) == 0 {
+				continue
+			}
+			// TODO
+
+		}
+	}
+
+	return
+}
+
+func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+
+	// price
+	m.Price, _ = jsonutil.GetInt("price", raw, 0)
+
+	// qualities
+	m.baseItem.Qualities = m.loadQualities(raw, langPack, mod, game)
+
+	// craft_from
+	//recipes := indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)
+	//for _, recipe := range recipes {
+	//	modName := recipe.ModName
+	//
+	//}
+
+	// un_craft_to
+
+}
+
+func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) []quality {
+	ql, _ := jsonutil.GetArray("qualities", raw, nil)
+
+	var (
+		id    string
+		level int64
+		res   []quality
+	)
+
+	for _, q := range ql {
+		if q.IsObject() {
+			id = getId(&q)
+			level, _ = jsonutil.GetInt("level", &q, 0)
+		} else if q.IsArray() {
+			id = q.Array()[0].String()
+			level = q.Array()[1].Int()
+		} else {
+			log.Debugf("quality format invalid, %v, type: %v, json: %v", q, q.Type, raw)
+		}
+
+		vos := m.getFromIndex(game, mod, constdef.TypeToolQuality, id, langPack)
+		if len(vos) == 0 {
+			res = append(res, quality{
+				sub: sub{
+					Id:   id,
+					Name: id,
+				},
+				Level: int(level),
+			})
+		} else {
+			res = append(res, quality{
+				sub: sub{
+					ModId: vos[0].ModId,
+					Id:    vos[0].Id,
+					Name:  vos[0].Name,
+					SType: vos[0].Type,
+				},
+				Level: int(level),
+			})
+		}
+	}
+
+	return res
+}
+
+func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *Mod, game *Game) [][]*item {
+	var tools [][]*item
+
+	itemGroups, _ := jsonutil.GetArray(field, raw, []gjson.Result{})
+	for _, it := range itemGroups {
+		var itemAlt []*item
+		for _, t := range it.Array() {
+			id := t.Array()[0].String()
+			num := t.Array()[1].Int()
+			if len(t.Array()) == 3 && t.Array()[2].String() == "LIST" {
+				reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, id, langPack)
+				if len(reqs) == 0 {
+					continue
+				}
+
+				req := reqs[0]
+				var reqItem [][]*item
+				switch field {
+				case "tools":
+					reqItem = req.Requirement.Tools
+				case "components":
+					reqItem = req.Requirement.Components
+				}
+				if len(reqItem) > 1 {
+					log.Warnf("loadItems LIST > 1, id: %v", id)
+					return nil
+				}
+				if len(reqItem) == 1 {
+					for _, i := range reqItem[0] {
+						i.Num *= num
+					}
+
+					itemAlt = append(itemAlt, reqItem[0]...)
+				}
+			} else {
+				itemAlt = append(itemAlt, m.loadItem(id, num, langPack, mod, game))
+			}
+		}
+
+		tools = append(tools, itemAlt)
+	}
+
+	return tools
+}
+
+func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod, game *Game) *item {
+	for tp := range constdef.ItemTypes {
+		res := game.Indexer.IdIndex(tp, itemId, langPack.Lang)
+		if len(res) == 0 {
+			res = game.processJson(mod, tp, itemId, langPack)
+			if len(res) == 0 {
+				continue
+			}
+		}
+
+		t := res[0]
+		return &item{
+			sub: sub{
+				ModId: t.ModId,
+				Id:    t.Id,
+				Name:  t.Name,
+				SType: t.Type,
+			},
+			Num: itemNum,
+		}
+	}
+
+	log.Errorf("item not found, itemId: %v, id: %v", itemId, m.Id)
+	return &item{
+		sub: sub{
+			Id: itemId,
+		},
+		Num: itemNum,
+	}
+}
+
+func (m *VO) getFromIndex(game *Game, mod *Mod, tp string, id string, langPack LangPack) []*VO {
+	res := game.Indexer.IdIndex(tp, id, langPack.Lang)
+	if len(res) == 0 {
+		res = game.processJson(mod, tp, id, langPack)
+		if len(res) == 0 {
+			log.Errorf("req not found, reqId: %v, id: %v", id, m.Id)
+		}
+	}
+
+	return res
 }

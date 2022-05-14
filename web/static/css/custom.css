@@ -1,21 +1,25 @@
 green {
-    color: #40a643;
-}
-
-brown {
-    color: #ab7b55;
+    color: #8cb369;
 }
 
 blue {
-    color: #73b9d2;
-}
-
-coral {
-    color: #d26943;
+    color: #5b8e7d;
 }
 
 red {
-    color: #d26363;
+    color: #bc4b51;
+}
+
+yellow {
+    color: #f4e285;
+}
+
+coral {
+    color: #f4a259;
+}
+
+brown {
+    color: #936043;
 }
 
 .home, .home:visited, .home:hover, .home:active {

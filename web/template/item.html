@@ -1,0 +1,12 @@
+{{define "item"}}
+
+    {{$po := .po}}
+
+    <ul>
+        {{range $q := .vo.Item.Qualities}}
+            <li>
+                <yellow>{{$q.Name}}</yellow> - {{$q.Level}} {{tranUI "level" $po}}
+            </li>
+        {{end}}
+    </ul>
+{{end}}

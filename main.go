@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	mw "zenith/internal/middleware"
 	"zenith/internal/view"
 
 	"zenith/internal/config"
@@ -40,13 +41,14 @@ func main() {
 		printBanner()
 	}
 
-	configLog(options["--debug-mode"])
+	debug := options["--debug-mode"]
+	configLog(debug)
 	download(options["--use-proxy"], options["--update-now"])
 	loadData(getVersion())
 	bgTask(options["--use-proxy"])
 
 	if options["--web-mode"] {
-		web()
+		web(debug)
 	} else {
 		cli(lang)
 	}
@@ -194,11 +196,12 @@ func cli(lang string) {
 	}
 }
 
-func web() {
+func web(debug bool) {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Static("web"))
 	e.Use(middleware.RateLimiterWithConfig(config.NewRateLimiterConfig()))
+	e.Use(mw.TemplateMW(debug))
 
 	e.Renderer = view.NewTemplate()
 

@@ -17,3 +17,16 @@ func Set[T comparable](arr []T) []T {
 
 	return res
 }
+
+func MergeMap[K, V comparable](m1, m2 map[K]V) map[K]V {
+	res := make(map[K]V)
+	for k, v := range m1 {
+		res[k] = v
+	}
+
+	for k, v := range m2 {
+		res[k] = v
+	}
+
+	return res
+}

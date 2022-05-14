@@ -31,6 +31,12 @@ msgstr "怪物"
 msgid "Search"
 msgstr "搜索"
 
+msgid "Price"
+msgstr "价格"
+
+msgid "level"
+msgstr "级"
+
 msgid "cool down"
 msgstr "冷却"
 
