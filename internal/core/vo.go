@@ -35,6 +35,7 @@ type baseType struct {
 	Volume      string   `json:"volume"`
 	Weight      string   `json:"weight"`
 	Material    []string `json:"material"`
+	FlagsDesc   []string `json:"flags_description"`
 }
 
 type Monster struct {
@@ -56,7 +57,6 @@ type Monster struct {
 	ArmorFire      int64            `json:"armor_fire"`
 	VisionDay      int64            `json:"vision_day"`
 	VisionNight    int64            `json:"vision_night"`
-	FlagsDesc      []string         `json:"flags_description"`
 	SpecialAttacks []*monsterAttack `json:"special_attacks"`
 }
 
@@ -128,12 +128,12 @@ type Recipe struct {
 
 type VO struct {
 	baseType
-	Monster
-	MonsterAttack
-	Effect
-	Item
-	Recipe
-	Requirement
+	Monster       *Monster       `json:"monster,omitempty"`
+	MonsterAttack *MonsterAttack `json:"monster_attack,omitempty"`
+	Effect        *Effect        `json:"effect,omitempty"`
+	Item          *Item          `json:"item,omitempty"`
+	Recipe        *Recipe        `json:"recipe,omitempty"`
+	Requirement   *Requirement   `json:"requirement,omitempty"`
 }
 
 func NewVO(modId, modName string) *VO {
@@ -194,20 +194,20 @@ func (m *VO) CliView(po *gotext.Po) string {
 	var colorLoader Color
 	colorLoader.Load(m.SymbolColor)
 	m.Symbol = colorLoader.Colorized(m.Symbol)
-	colorLoader.Load(m.DiffColor)
-	m.DiffDesc = colorLoader.Colorized(m.DiffDesc)
+	colorLoader.Load(m.Monster.DiffColor)
+	m.Monster.DiffDesc = colorLoader.Colorized(m.Monster.DiffDesc)
 
 	res := fmt.Sprintf(template,
 		m.Symbol, m.Name, m.Id, m.ModName,
-		m.DiffDesc, m.Diff, m.Description,
-		i18n.TranCustom("HP", po), m.HP, i18n.TranCustom("Speed", po), m.Speed,
+		m.Monster.DiffDesc, m.Monster.Diff, m.Description,
+		i18n.TranCustom("HP", po), m.Monster.HP, i18n.TranCustom("Speed", po), m.Monster.Speed,
 		i18n.TranCustom("Volume", po), m.Volume, i18n.TranCustom("Weight", po), m.Weight,
-		i18n.TranCustom("Attack", po), m.Attack, i18n.TranCustom("Attack cost", po), m.AttackCost,
-		i18n.TranCustom("Aggression", po), m.Aggression, i18n.TranCustom("Morale", po), m.Morale,
-		i18n.TranCustom("Vision", po), m.VisionDay, i18n.TranCustom("night", po), m.VisionNight,
-		i18n.TranCustom("Armor bash", po), m.ArmorBash, i18n.TranCustom("Armor cut", po), m.ArmorCut, i18n.TranCustom("Armor stab", po), m.ArmorStab,
-		i18n.TranCustom("Armor bullet", po), m.ArmorBullet, i18n.TranCustom("Armor acid", po), m.ArmorAcid, i18n.TranCustom("Armor fire", po), m.ArmorFire,
-		i18n.TranCustom("Bleed rate", po), m.BleedRate,
+		i18n.TranCustom("Attack", po), m.Monster.Attack, i18n.TranCustom("Attack cost", po), m.Monster.AttackCost,
+		i18n.TranCustom("Aggression", po), m.Monster.Aggression, i18n.TranCustom("Morale", po), m.Monster.Morale,
+		i18n.TranCustom("Vision", po), m.Monster.VisionDay, i18n.TranCustom("night", po), m.Monster.VisionNight,
+		i18n.TranCustom("Armor bash", po), m.Monster.ArmorBash, i18n.TranCustom("Armor cut", po), m.Monster.ArmorCut, i18n.TranCustom("Armor stab", po), m.Monster.ArmorStab,
+		i18n.TranCustom("Armor bullet", po), m.Monster.ArmorBullet, i18n.TranCustom("Armor acid", po), m.Monster.ArmorAcid, i18n.TranCustom("Armor fire", po), m.Monster.ArmorFire,
+		i18n.TranCustom("Bleed rate", po), m.Monster.BleedRate,
 	)
 
 	for _, flagDesc := range m.FlagsDesc {
@@ -267,6 +267,8 @@ func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack, mod *Mod, game *Ga
 }
 
 func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.Monster = new(Monster)
+
 	meleeCut, _ := jsonutil.GetInt("melee_cut", raw, 0)
 	meleeDice, _ := jsonutil.GetInt("melee_dice", raw, 0)
 	meleeDiceSides, _ := jsonutil.GetInt("melee_dice_sides", raw, 0)
@@ -293,54 +295,54 @@ func (m *VO) bindMonster(raw *gjson.Result, langPack LangPack, mod *Mod, game *G
 	visionNight, _ := jsonutil.GetInt("vision_night", raw, 1)
 	bleedRate, _ := jsonutil.GetInt("bleed_rate", raw, 100)
 
-	m.AttackCost = attackCost
-	m.BleedRate = bleedRate
-	m.Attack = fmt.Sprintf("%dd%d+%d", meleeDice, meleeDiceSides, meleeCut)
-	m.Aggression = aggression
-	m.Morale = morale
-	m.ArmorCut = armorCut
-	m.ArmorBash = armorBash
-	m.ArmorBullet = armorBullet
-	m.ArmorStab = armorStab
-	m.ArmorAcid = armorAcid
-	m.ArmorFire = armorFire
-	m.HP = int64(math.Max(1, float64(hp)))
-	m.Speed = speed
-	m.VisionDay = visionDay
-	m.VisionNight = visionNight
+	m.Monster.AttackCost = attackCost
+	m.Monster.BleedRate = bleedRate
+	m.Monster.Attack = fmt.Sprintf("%dd%d+%d", meleeDice, meleeDiceSides, meleeCut)
+	m.Monster.Aggression = aggression
+	m.Monster.Morale = morale
+	m.Monster.ArmorCut = armorCut
+	m.Monster.ArmorBash = armorBash
+	m.Monster.ArmorBullet = armorBullet
+	m.Monster.ArmorStab = armorStab
+	m.Monster.ArmorAcid = armorAcid
+	m.Monster.ArmorFire = armorFire
+	m.Monster.HP = int64(math.Max(1, float64(hp)))
+	m.Monster.Speed = speed
+	m.Monster.VisionDay = visionDay
+	m.Monster.VisionNight = visionNight
 
 	// https://github.com/CleverRaven/Cataclysm-DDA/blob/c5953acae3bb4a0b2b51ddf23ea695f41079d2a8/src/monstergenerator.cpp#L1064
-	m.Diff = float64((meleeSkill+1)*meleeDice*(bonusCut+meleeDiceSides))*0.04 +
+	m.Monster.Diff = float64((meleeSkill+1)*meleeDice*(bonusCut+meleeDiceSides))*0.04 +
 		float64((dodge+1)*(3+armorBash+armorCut))*0.04 + float64(diff+int64(specialAttacksSize)+8*int64(emitFieldsSize))
-	m.Diff *= (float64(hp+speed-attackCost)+float64(morale+aggression)*0.1)*0.01 + float64(visionDay+2*visionNight)*0.01
-	m.Diff, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", m.Diff), 64)
+	m.Monster.Diff *= (float64(hp+speed-attackCost)+float64(morale+aggression)*0.1)*0.01 + float64(visionDay+2*visionNight)*0.01
+	m.Monster.Diff, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", m.Monster.Diff), 64)
 
-	if m.Diff < 3 {
-		m.DiffColor = "light_gray"
-		m.DiffDesc = "<color_light_gray>Minimal threat.</color>"
-	} else if m.Diff < 10 {
-		m.DiffColor = "light_gray"
-		m.DiffDesc = "<color_light_gray>Mildly dangerous.</color>"
-	} else if m.Diff < 20 {
-		m.DiffColor = "light_red"
-		m.DiffDesc = "<color_light_red>Dangerous.</color>"
-	} else if m.Diff < 30 {
-		m.DiffColor = "red"
-		m.DiffDesc = "<color_red>Very dangerous.</color>"
-	} else if m.Diff < 50 {
-		m.DiffColor = "red"
-		m.DiffDesc = "<color_red>Extremely dangerous.</color>"
+	if m.Monster.Diff < 3 {
+		m.Monster.DiffColor = "light_gray"
+		m.Monster.DiffDesc = "<color_light_gray>Minimal threat.</color>"
+	} else if m.Monster.Diff < 10 {
+		m.Monster.DiffColor = "light_gray"
+		m.Monster.DiffDesc = "<color_light_gray>Mildly dangerous.</color>"
+	} else if m.Monster.Diff < 20 {
+		m.Monster.DiffColor = "light_red"
+		m.Monster.DiffDesc = "<color_light_red>Dangerous.</color>"
+	} else if m.Monster.Diff < 30 {
+		m.Monster.DiffColor = "red"
+		m.Monster.DiffDesc = "<color_red>Very dangerous.</color>"
+	} else if m.Monster.Diff < 50 {
+		m.Monster.DiffColor = "red"
+		m.Monster.DiffDesc = "<color_red>Extremely dangerous.</color>"
 	} else {
-		m.DiffColor = "red"
-		m.DiffDesc = "<color_red>Fatally dangerous!</color>"
+		m.Monster.DiffColor = "red"
+		m.Monster.DiffDesc = "<color_red>Fatally dangerous!</color>"
 	}
 
-	temp := i18n.TranString(m.DiffDesc, langPack.Mo)
+	temp := i18n.TranString(m.Monster.DiffDesc, langPack.Mo)
 	l := strings.Index(temp, ">")
 	r := strings.LastIndex(temp, "<")
-	m.DiffDesc = temp[l+1 : r]
+	m.Monster.DiffDesc = temp[l+1 : r]
 
-	m.SpecialAttacks = m.parseSpecialAttacks(raw.Get("special_attacks"), langPack, mod, game)
+	m.Monster.SpecialAttacks = m.parseSpecialAttacks(raw.Get("special_attacks"), langPack, mod, game)
 }
 
 func (m *VO) parseSpecialAttacks(field gjson.Result, langPack LangPack, mod *Mod, game *Game) []*monsterAttack {
@@ -364,7 +366,7 @@ func (m *VO) parseSpecialAttacks(field gjson.Result, langPack LangPack, mod *Mod
 				if len(ref) == 0 {
 					continue
 				}
-				ma.MonsterAttack = ref[0].MonsterAttack
+				ma.MonsterAttack = *ref[0].MonsterAttack
 				ma.ModId = ref[0].ModId
 			}
 		}
@@ -391,11 +393,11 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, g
 				continue
 			}
 			e := es[0]
-			effects[i].Effect = e.Effect
+			effects[i].Effect = *e.Effect
 			effects[i].ModId = e.ModId
 		}
 	}
-	m.MonsterAttack = MonsterAttack{
+	m.MonsterAttack = &MonsterAttack{
 		Cooldown: cooldown,
 		MoveCost: moveCost,
 		Effects:  effects,
@@ -403,6 +405,7 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, g
 }
 
 func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack) {
+	m.Effect = new(Effect)
 	e := new(Effect)
 	_ = json.Unmarshal([]byte(raw.String()), e)
 	e.Names = util.Set(e.Names)
@@ -418,11 +421,12 @@ func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack) {
 	}
 
 	m.Name = i18n.TranCustom(m.Id, langPack.Po)
-	m.Names = names
-	m.Descs = descs
+	m.Effect.Names = names
+	m.Effect.Descs = descs
 }
 
 func (m *VO) bindRequirement(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.Requirement = new(Requirement)
 	// qualities
 	m.Requirement.Qualities = m.loadQualities(raw, langPack, mod, game)
 
@@ -437,7 +441,10 @@ func (m *VO) bindRequirement(raw *gjson.Result, langPack LangPack, mod *Mod, gam
 }
 
 func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.Recipe = new(Recipe)
+
 	m.Recipe.Tools, m.Recipe.Components = m.loadItems(raw, langPack, "tools", mod, game), m.loadItems(raw, langPack, "components", mod, game)
+	m.Recipe.Qualities = m.loadQualities(raw, langPack, mod, game)
 
 	usings, has := jsonutil.GetArray("using", raw, []gjson.Result{})
 	if has {
@@ -484,16 +491,18 @@ func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod
 }
 
 func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.Item = new(Item)
+
 	if m.Type == constdef.TypeMigration {
 		m.Item.Replace, _ = jsonutil.GetString("replace", raw, "")
 		return
 	}
 
 	// price
-	m.Price, _ = jsonutil.GetInt("price", raw, 0)
+	m.Item.Price, _ = jsonutil.GetInt("price", raw, 0)
 
 	// qualities
-	m.baseItem.Qualities = m.loadQualities(raw, langPack, mod, game)
+	m.Item.Qualities = m.loadQualities(raw, langPack, mod, game)
 
 	// craft_from
 	//recipes := indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)
@@ -520,8 +529,13 @@ func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game 
 			id = getId(&q)
 			level, _ = jsonutil.GetInt("level", &q, 0)
 		} else if q.IsArray() {
-			id = q.Array()[0].String()
-			level = q.Array()[1].Int()
+			if q.Array()[0].IsObject() {
+				id, _ = jsonutil.GetString("id", &q.Array()[0], "")
+				level, _ = jsonutil.GetInt("level", &q.Array()[0], 0)
+			} else {
+				id = q.Array()[0].String()
+				level = q.Array()[1].Int()
+			}
 		} else {
 			log.Debugf("quality format invalid, %v, type: %v, json: %v", q, q.Type, raw)
 		}
@@ -566,34 +580,32 @@ func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *
 
 			if len(t.Array()) == 3 && t.Array()[2].String() == "LIST" {
 				reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, id, langPack)
-				if len(reqs) == 0 {
-					continue
-				}
+				toAdd := make([]*item, 0)
 
-				req := reqs[0]
-				var reqItem [][]*item
-				switch field {
-				case "tools":
-					reqItem = req.Requirement.Tools
-				case "components":
-					reqItem = req.Requirement.Components
-				}
-				if len(reqItem) > 1 {
-					log.Warnf("loadItems LIST > 1, id: %v", id)
-					return nil
-				}
-				if len(reqItem) == 1 {
-					toAdd := make([]*item, 0)
-					for _, i := range reqItem[0] {
-						temp := *i
-						if i.Num != -1 {
-							temp.Num *= num
-						}
-						toAdd = append(toAdd, &temp)
+				for _, req := range reqs {
+					var reqItem [][]*item
+					switch field {
+					case "tools":
+						reqItem = req.Requirement.Tools
+					case "components":
+						reqItem = req.Requirement.Components
 					}
-
-					itemAlt = append(itemAlt, toAdd...)
+					if len(reqItem) > 1 {
+						log.Warnf("loadItems LIST > 1, id: %v", id)
+						return nil
+					}
+					if len(reqItem) == 1 {
+						for _, i := range reqItem[0] {
+							temp := *i
+							if i.Num != -1 {
+								temp.Num *= num
+							}
+							toAdd = append(toAdd, &temp)
+						}
+					}
 				}
+				itemAlt = append(itemAlt, toAdd...)
+
 			} else {
 				itemAlt = append(itemAlt, m.loadItem(id, num, langPack, mod, game))
 			}
@@ -611,7 +623,7 @@ func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod,
 		if len(res) == 0 {
 			continue
 		} else if tp == constdef.TypeMigration {
-			replace := res[0].Replace
+			replace := res[0].Item.Replace
 			for tp := range constdef.ItemTypes {
 				res = game.loadVO(mod, tp, replace, langPack)
 				if len(res) > 0 {
