@@ -15,10 +15,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
-	"zenith/internal/constdef"
 	mw "zenith/internal/middleware"
 	"zenith/internal/view"
-	"zenith/pkg/jsonutil"
 
 	"zenith/internal/config"
 	"zenith/internal/core"
@@ -199,9 +197,6 @@ func cli(lang string) {
 }
 
 func web(debug bool) {
-
-	log.Error(jsonutil.ToJson(getGame().Indexer.IdIndex(constdef.TypeRecipe, "aspirin", "zh_CN")))
-
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Static("web"))

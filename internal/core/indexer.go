@@ -25,6 +25,7 @@ type Indexer interface {
 	ModFuzzyNameIndex(mod, tp, keyword, lang string) []*VO
 	IdIndex(tp, id, lang string) []*VO
 	ModIdIndex(mod, tp, id, lang string) []*VO
+	TypeIndex(tp, lang string) []*VO
 
 	AddRangeIndex(vo *VO)
 	AddNameIndex(vo *VO)
@@ -242,6 +243,19 @@ func (i *MemIndexer) ModIdIndex(mod, tp, id, lang string) []*VO {
 		if idMap, has := idx.idIndex[tp]; has {
 			if items, has := idMap[id]; has {
 				res = append(res, items...)
+			}
+		}
+	}
+
+	return res
+}
+
+func (i *MemIndexer) TypeIndex(tp, lang string) []*VO {
+	res := make([]*VO, 0)
+	if modIdx, has := i.i18nIndexes[lang]; has {
+		for _, idx := range modIdx {
+			for _, vo := range idx.idIndex[tp] {
+				res = append(res, vo...)
 			}
 		}
 	}

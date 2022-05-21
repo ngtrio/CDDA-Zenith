@@ -115,15 +115,16 @@ type quality struct {
 }
 
 type Requirement struct {
-	Components [][]*item `json:"components"`
-	Tools      [][]*item `json:"tools"`
+	Components [][]item  `json:"components"`
+	Tools      [][]item  `json:"tools"`
 	Qualities  []quality `json:"qualities"`
 }
 
 type Recipe struct {
-	Components [][]*item `json:"components"`
-	Tools      [][]*item `json:"tools"`
+	Components [][]item  `json:"components"`
+	Tools      [][]item  `json:"tools"`
 	Qualities  []quality `json:"qualities"`
+	Using      []item    `json:"using"`
 }
 
 type VO struct {
@@ -158,7 +159,7 @@ func (m *VO) Bind(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	case tp == constdef.TypeEffect:
 		m.bindEffect(raw, langPack)
 	case tp == constdef.TypeRecipe || tp == constdef.TypeUnCraft:
-		m.bindRecipeAndUnCraft(raw, langPack, mod, game)
+		m.preBindRecipeAndUnCraft(raw, langPack, mod, game)
 	case tp == constdef.TypeRequirement:
 		m.bindRequirement(raw, langPack, mod, game)
 	case constdef.ItemTypes[tp]:
@@ -252,7 +253,7 @@ func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack, mod *Mod, game *Ga
 		} else {
 			mId = material.String()
 		}
-		ms := m.getFromIndex(game, mod, constdef.TypeMaterial, mId, langPack)
+		ms := m.getDepFromIndex(game, mod, constdef.TypeMaterial, mId, langPack)
 		if len(ms) > 0 {
 			m.Material = append(m.Material, ms[0].Name)
 		} else {
@@ -362,7 +363,7 @@ func (m *VO) parseSpecialAttacks(field gjson.Result, langPack LangPack, mod *Mod
 				attackId, _ := jsonutil.GetString("id", &sa, "")
 				ma.Id = attackId
 
-				ref := m.getFromIndex(game, mod, constdef.TypeMonsterAttack, attackId, langPack)
+				ref := m.getDepFromIndex(game, mod, constdef.TypeMonsterAttack, attackId, langPack)
 				if len(ref) == 0 {
 					continue
 				}
@@ -388,7 +389,7 @@ func (m *VO) bindMonsterAttack(raw *gjson.Result, langPack LangPack, mod *Mod, g
 			effects[i] = new(monsterAttackEffect)
 			_ = json.Unmarshal([]byte(j.String()), effects[i])
 			effectId := effects[i].Id
-			es := m.getFromIndex(game, mod, constdef.TypeEffect, effectId, langPack)
+			es := m.getDepFromIndex(game, mod, constdef.TypeEffect, effectId, langPack)
 			if len(es) == 0 {
 				continue
 			}
@@ -427,67 +428,57 @@ func (m *VO) bindEffect(raw *gjson.Result, langPack LangPack) {
 
 func (m *VO) bindRequirement(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	m.Requirement = new(Requirement)
+
 	// qualities
 	m.Requirement.Qualities = m.loadQualities(raw, langPack, mod, game)
 
 	// tools
-	tools := m.loadItems(raw, langPack, "tools", mod, game)
+	tools := m.preLoadItems(raw, "tools")
 
 	// components
-	components := m.loadItems(raw, langPack, "components", mod, game)
+	components := m.preLoadItems(raw, "components")
 
 	m.Requirement.Tools, m.Requirement.Components = tools, components
 	return
 }
 
-func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+func (m *VO) postBindRequirement(game *Game, langPack LangPack) {
+	tools := m.Requirement.Tools
+	components := m.Requirement.Components
+
+	m.Requirement.Tools = m.postLoadItems(tools, langPack, "tools", game)
+	m.Requirement.Components = m.postLoadItems(components, langPack, "component", game)
+}
+
+func (m *VO) preBindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	m.Recipe = new(Recipe)
 
-	m.Recipe.Tools, m.Recipe.Components = m.loadItems(raw, langPack, "tools", mod, game), m.loadItems(raw, langPack, "components", mod, game)
+	m.Recipe.Tools = m.preLoadItems(raw, "tools")
+	m.Recipe.Components = m.preLoadItems(raw, "components")
 	m.Recipe.Qualities = m.loadQualities(raw, langPack, mod, game)
-
-	usings, has := jsonutil.GetArray("using", raw, []gjson.Result{})
-	if has {
-		for _, using := range usings {
-			reqId := using.Array()[0].String()
-			reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, reqId, langPack)
-			if len(reqs) == 0 {
-				continue
-			}
-			req := reqs[0]
-			mult := using.Array()[1].Int()
-			comp := req.Requirement.Components
-			for _, g := range comp {
-				toAdd := make([]*item, 0)
-				for _, i := range g {
-					temp := *i
-					if i.Num != -1 {
-						temp.Num *= mult
-					}
-					toAdd = append(toAdd, &temp)
-				}
-				m.Recipe.Components = append(m.Recipe.Components, toAdd)
-			}
-
-			tools := req.Requirement.Tools
-			for _, g := range tools {
-				toAdd := make([]*item, 0)
-				for _, i := range g {
-					temp := *i
-					if i.Num != -1 {
-						temp.Num *= mult
-					}
-					toAdd = append(toAdd, &temp)
-				}
-				m.Recipe.Tools = append(m.Recipe.Tools, toAdd)
-			}
-
-			qualities := req.Requirement.Qualities
-			m.Recipe.Qualities = append(m.Recipe.Qualities, qualities...)
-		}
-	}
+	m.Recipe.Using = m.preLoadUsing(raw)
 
 	return
+}
+
+func (m *VO) postBindRecipeAndUnCraft(game *Game, langPack LangPack) {
+
+	usingTools := m.postLoadUsing(m.Recipe.Using, langPack, "tools", game)
+	usingComponents := m.postLoadUsing(m.Recipe.Using, langPack, "components", game)
+
+	tools := m.postLoadItems(m.Recipe.Tools, langPack, "tools", game)
+	components := m.postLoadItems(m.Recipe.Components, langPack, "components", game)
+
+	m.Recipe.Tools = append(tools, usingTools...)
+	m.Recipe.Components = append(components, usingComponents...)
+
+	for idx, tool := range m.Recipe.Tools {
+		m.Recipe.Tools[idx] = util.Set(tool)
+	}
+
+	for idx, component := range m.Recipe.Components {
+		m.Recipe.Components[idx] = util.Set(component)
+	}
 }
 
 func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
@@ -540,7 +531,7 @@ func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game 
 			log.Debugf("quality format invalid, %v, type: %v, json: %v", q, q.Type, raw)
 		}
 
-		vos := m.getFromIndex(game, mod, constdef.TypeToolQuality, id, langPack)
+		vos := m.getDepFromIndex(game, mod, constdef.TypeToolQuality, id, langPack)
 		if len(vos) == 0 {
 			res = append(res, quality{
 				sub: sub{
@@ -565,25 +556,73 @@ func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game 
 	return res
 }
 
-func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *Mod, game *Game) [][]*item {
-	var tools [][]*item
-
+func (m *VO) preLoadItems(raw *gjson.Result, field string) [][]item {
+	var items [][]item
 	itemGroups, _ := jsonutil.GetArray(field, raw, []gjson.Result{})
 	for _, it := range itemGroups {
-		var itemAlt []*item
+		var itemAlt []item
 		for _, t := range it.Array() {
 			id := t.Array()[0].String()
 			num := int64(-1)
 			if len(t.Array()) > 1 {
 				num = t.Array()[1].Int()
 			}
-
+			var sType string
 			if len(t.Array()) == 3 && t.Array()[2].String() == "LIST" {
-				reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, id, langPack)
-				toAdd := make([]*item, 0)
+				sType = constdef.TypeRequirement
+			}
 
+			itemAlt = append(itemAlt, item{
+				sub: sub{
+					Id:    id,
+					SType: sType,
+				},
+				Num: num,
+			})
+		}
+		items = append(items, itemAlt)
+	}
+
+	return items
+}
+
+func (m *VO) preLoadUsing(raw *gjson.Result) []item {
+	var items []item
+
+	usings, _ := jsonutil.GetArray("using", raw, []gjson.Result{})
+	for _, using := range usings {
+		id := using.Array()[0].String()
+		num := int64(-1)
+		if len(using.Array()) > 1 {
+			num = using.Array()[1].Int()
+		}
+
+		items = append(items, item{
+			sub: sub{
+				Id:    id,
+				SType: constdef.TypeRequirement,
+			},
+			Num: num,
+		})
+	}
+
+	return items
+}
+
+func (m *VO) postLoadItems(items [][]item, langPack LangPack, field string, game *Game) [][]item {
+	var newItems [][]item
+
+	for _, it := range items {
+		var itemAlt []item
+		for _, t := range it {
+			id := t.Id
+			num := t.Num
+
+			if t.SType == constdef.TypeRequirement {
+				reqs := game.Indexer.IdIndex(t.SType, id, langPack.Lang)
+				toAdd := make([]item, 0)
 				for _, req := range reqs {
-					var reqItem [][]*item
+					var reqItem [][]item
 					switch field {
 					case "tools":
 						reqItem = req.Requirement.Tools
@@ -596,36 +635,35 @@ func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *
 					}
 					if len(reqItem) == 1 {
 						for _, i := range reqItem[0] {
-							temp := *i
 							if i.Num != -1 {
-								temp.Num *= num
+								i.Num *= num
 							}
-							toAdd = append(toAdd, &temp)
+							toAdd = append(toAdd, i)
 						}
 					}
 				}
 				itemAlt = append(itemAlt, toAdd...)
 
 			} else {
-				itemAlt = append(itemAlt, m.loadItem(id, num, langPack, mod, game))
+				itemAlt = append(itemAlt, m.postLoadItem(id, num, langPack, game))
 			}
 		}
 
-		tools = append(tools, itemAlt)
+		newItems = append(newItems, itemAlt)
 	}
 
-	return tools
+	return newItems
 }
 
-func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod, game *Game) *item {
+func (m *VO) postLoadItem(itemId string, itemNum int64, langPack LangPack, game *Game) item {
 	for tp := range constdef.ItemTypes {
-		res := game.loadVO(mod, tp, itemId, langPack)
+		res := game.Indexer.IdIndex(tp, itemId, langPack.Lang)
 		if len(res) == 0 {
 			continue
 		} else if tp == constdef.TypeMigration {
 			replace := res[0].Item.Replace
 			for tp := range constdef.ItemTypes {
-				res = game.loadVO(mod, tp, replace, langPack)
+				res := game.Indexer.IdIndex(tp, replace, langPack.Lang)
 				if len(res) > 0 {
 					break
 				}
@@ -637,7 +675,7 @@ func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod,
 		}
 
 		t := res[0]
-		return &item{
+		return item{
 			sub: sub{
 				ModId: t.ModId,
 				Id:    t.Id,
@@ -649,7 +687,7 @@ func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod,
 	}
 
 	log.Errorf("item not found, itemId: %v, id: %v", itemId, m.Id)
-	return &item{
+	return item{
 		sub: sub{
 			Id: itemId,
 		},
@@ -657,13 +695,50 @@ func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod,
 	}
 }
 
-func (m *VO) getFromIndex(game *Game, mod *Mod, tp string, id string, langPack LangPack) []*VO {
-	res := game.Indexer.IdIndex(tp, id, langPack.Lang)
-	if len(res) == 0 {
-		res = game.loadVO(mod, tp, id, langPack)
-		if len(res) == 0 {
-			log.Errorf("req not found, reqId: %v, id: %v", id, m.Id)
+func (m *VO) postLoadUsing(usings []item, langPack LangPack, field string, game *Game) [][]item {
+	var newItems [][]item
+
+	for _, using := range usings {
+		id := using.Id
+		num := using.Num
+
+		reqs := game.Indexer.IdIndex(constdef.TypeRequirement, id, langPack.Lang)
+		for _, req := range reqs {
+			var reqItems [][]item
+			switch field {
+			case "tools":
+				reqItems = req.Requirement.Tools
+			case "components":
+				reqItems = req.Requirement.Components
+			}
+
+			for _, reqItem := range reqItems {
+				var alt []item
+				for _, i := range reqItem {
+					i.Num *= num
+					alt = append(alt, i)
+				}
+				newItems = append(newItems, alt)
+			}
 		}
+	}
+
+	return newItems
+}
+
+func (m *VO) getDepFromIndex(game *Game, mod *Mod, tp string, id string, langPack LangPack) []*VO {
+	res := game.loadVO(mod, tp, id, langPack)
+	if len(res) == 0 {
+		for _, depModId := range mod.Dependencies {
+			res = game.loadVO(game.Mods[depModId], tp, id, langPack)
+			if len(res) != 0 {
+				break
+			}
+		}
+	}
+
+	if len(res) == 0 {
+		log.Errorf("req not found, reqId: %v, id: %v", id, m.Id)
 	}
 
 	return res

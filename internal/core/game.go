@@ -55,7 +55,7 @@ func (game *Game) Load(targets map[string]bool) {
 		}
 	}
 
-	game.postLoad()
+	game.postProcess()
 }
 
 func (game *Game) preLoad() error {
@@ -141,7 +141,7 @@ func (game *Game) doLoad(mod *Mod) {
 			id := getId(json)
 			tp := getType(json)
 			if id == "" {
-				//log.Debugf("id not found, tp: %s", tp)
+				log.Debugf("id not found, tp: %s", tp)
 				continue
 			}
 
@@ -174,8 +174,11 @@ func (game *Game) loadVO(mod *Mod, tp, id string, lang LangPack) []*VO {
 		return res
 	}
 
-	if r := game.Indexer.IdIndex(tp, id, lang.Lang); len(r) > 0 {
-		return r
+	res = game.Indexer.IdIndex(tp, id, lang.Lang)
+	for _, r := range res {
+		if r.ModId == mod.Id {
+			return res
+		}
 	}
 
 	for _, json := range mod.TempData[tp][id] {
@@ -189,7 +192,21 @@ func (game *Game) loadVO(mod *Mod, tp, id string, lang LangPack) []*VO {
 	return res
 }
 
-func (game *Game) postLoad() {
+func (game *Game) postProcess() {
+	for _, lang := range game.LangPacks {
+		for _, vo := range game.Indexer.TypeIndex(constdef.TypeRequirement, lang.Lang) {
+			vo.postBindRequirement(game, lang)
+		}
+
+		for _, vo := range game.Indexer.TypeIndex(constdef.TypeRecipe, lang.Lang) {
+			vo.postBindRecipeAndUnCraft(game, lang)
+		}
+
+		for _, vo := range game.Indexer.TypeIndex(constdef.TypeUnCraft, lang.Lang) {
+			vo.postBindRecipeAndUnCraft(game, lang)
+		}
+	}
+
 	game.Indexer.PrintItemNum()
 }
 
