@@ -87,6 +87,7 @@ type Effect struct {
 type Item struct {
 	baseType
 	baseItem
+	Replace string `json:"replace"`
 }
 
 type baseItem struct {
@@ -436,6 +437,8 @@ func (m *VO) bindRequirement(raw *gjson.Result, langPack LangPack, mod *Mod, gam
 }
 
 func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	m.Recipe.Tools, m.Recipe.Components = m.loadItems(raw, langPack, "tools", mod, game), m.loadItems(raw, langPack, "components", mod, game)
+
 	usings, has := jsonutil.GetArray("using", raw, []gjson.Result{})
 	if has {
 		for _, using := range usings {
@@ -444,8 +447,36 @@ func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod
 			if len(reqs) == 0 {
 				continue
 			}
-			// TODO
+			req := reqs[0]
+			mult := using.Array()[1].Int()
+			comp := req.Requirement.Components
+			for _, g := range comp {
+				toAdd := make([]*item, 0)
+				for _, i := range g {
+					temp := *i
+					if i.Num != -1 {
+						temp.Num *= mult
+					}
+					toAdd = append(toAdd, &temp)
+				}
+				m.Recipe.Components = append(m.Recipe.Components, toAdd)
+			}
 
+			tools := req.Requirement.Tools
+			for _, g := range tools {
+				toAdd := make([]*item, 0)
+				for _, i := range g {
+					temp := *i
+					if i.Num != -1 {
+						temp.Num *= mult
+					}
+					toAdd = append(toAdd, &temp)
+				}
+				m.Recipe.Tools = append(m.Recipe.Tools, toAdd)
+			}
+
+			qualities := req.Requirement.Qualities
+			m.Recipe.Qualities = append(m.Recipe.Qualities, qualities...)
 		}
 	}
 
@@ -453,6 +484,10 @@ func (m *VO) bindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *Mod
 }
 
 func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
+	if m.Type == constdef.TypeMigration {
+		m.Item.Replace, _ = jsonutil.GetString("replace", raw, "")
+		return
+	}
 
 	// price
 	m.Price, _ = jsonutil.GetInt("price", raw, 0)
@@ -524,7 +559,11 @@ func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *
 		var itemAlt []*item
 		for _, t := range it.Array() {
 			id := t.Array()[0].String()
-			num := t.Array()[1].Int()
+			num := int64(-1)
+			if len(t.Array()) > 1 {
+				num = t.Array()[1].Int()
+			}
+
 			if len(t.Array()) == 3 && t.Array()[2].String() == "LIST" {
 				reqs := m.getFromIndex(game, mod, constdef.TypeRequirement, id, langPack)
 				if len(reqs) == 0 {
@@ -544,11 +583,16 @@ func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *
 					return nil
 				}
 				if len(reqItem) == 1 {
+					toAdd := make([]*item, 0)
 					for _, i := range reqItem[0] {
-						i.Num *= num
+						temp := *i
+						if i.Num != -1 {
+							temp.Num *= num
+						}
+						toAdd = append(toAdd, &temp)
 					}
 
-					itemAlt = append(itemAlt, reqItem[0]...)
+					itemAlt = append(itemAlt, toAdd...)
 				}
 			} else {
 				itemAlt = append(itemAlt, m.loadItem(id, num, langPack, mod, game))
@@ -563,11 +607,20 @@ func (m *VO) loadItems(raw *gjson.Result, langPack LangPack, field string, mod *
 
 func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod, game *Game) *item {
 	for tp := range constdef.ItemTypes {
-		res := game.Indexer.IdIndex(tp, itemId, langPack.Lang)
+		res := game.loadVO(mod, tp, itemId, langPack)
 		if len(res) == 0 {
-			res = game.processJson(mod, tp, itemId, langPack)
+			continue
+		} else if tp == constdef.TypeMigration {
+			replace := res[0].Replace
+			for tp := range constdef.ItemTypes {
+				res = game.loadVO(mod, tp, replace, langPack)
+				if len(res) > 0 {
+					break
+				}
+			}
+
 			if len(res) == 0 {
-				continue
+				break
 			}
 		}
 
@@ -595,7 +648,7 @@ func (m *VO) loadItem(itemId string, itemNum int64, langPack LangPack, mod *Mod,
 func (m *VO) getFromIndex(game *Game, mod *Mod, tp string, id string, langPack LangPack) []*VO {
 	res := game.Indexer.IdIndex(tp, id, langPack.Lang)
 	if len(res) == 0 {
-		res = game.processJson(mod, tp, id, langPack)
+		res = game.loadVO(mod, tp, id, langPack)
 		if len(res) == 0 {
 			log.Errorf("req not found, reqId: %v, id: %v", id, m.Id)
 		}

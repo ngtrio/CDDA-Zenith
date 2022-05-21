@@ -159,7 +159,7 @@ func (game *Game) doLoad(mod *Mod) {
 	for tp, idJsons := range mod.TempData {
 		for id := range idJsons {
 			for _, lang := range game.LangPacks {
-				game.processJson(mod, tp, id, lang)
+				game.loadVO(mod, tp, id, lang)
 			}
 		}
 	}
@@ -167,7 +167,7 @@ func (game *Game) doLoad(mod *Mod) {
 	mod.Loaded = true
 }
 
-func (game *Game) processJson(mod *Mod, tp, id string, lang LangPack) []*VO {
+func (game *Game) loadVO(mod *Mod, tp, id string, lang LangPack) []*VO {
 	var res []*VO
 
 	if !isInAllowList(tp) {

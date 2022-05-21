@@ -17,6 +17,10 @@ var ItemTypes = map[string]bool{
 	TypeItemGroup:  true,
 	TypeComestible: true,
 	TypeToolArmor:  true,
+	TypeEngine:     true,
+	TypeWheel:      true,
+	TypePetArmor:   true,
+	TypeMigration:  true,
 }
 
 var CommonTypes = map[string]bool{
@@ -53,4 +57,8 @@ const (
 	TypeRecipe        = "recipe"
 	TypeUnCraft       = "uncraft"
 	TypeRequirement   = "requirement"
+	TypeEngine        = "ENGINE"
+	TypeWheel         = "WHEEL"
+	TypePetArmor      = "PET_ARMOR"
+	TypeMigration     = "MIGRATION"
 )
