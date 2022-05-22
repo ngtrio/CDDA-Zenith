@@ -3,6 +3,7 @@ package core
 import (
 	log "github.com/sirupsen/logrus"
 	"strings"
+	"zenith/internal/constdef"
 )
 
 type rangeIndex map[string][]*VO
@@ -25,6 +26,7 @@ type Indexer interface {
 	ModFuzzyNameIndex(mod, tp, keyword, lang string) []*VO
 	IdIndex(tp, id, lang string) []*VO
 	ModIdIndex(mod, tp, id, lang string) []*VO
+	TypeIndex(tp, lang string) []*VO
 
 	AddRangeIndex(vo *VO)
 	AddNameIndex(vo *VO)
@@ -221,14 +223,24 @@ func (i *MemIndexer) ModFuzzyNameIndex(mod, tp, keyword, lang string) []*VO {
 }
 
 func (i *MemIndexer) IdIndex(tp, id, lang string) []*VO {
-	res := make([]*VO, 0)
-	for _, modId := range i.modIds {
-		r := i.ModIdIndex(modId, tp, id, lang)
-		if r != nil {
-			res = append(res, r...)
+	var tps []string
+	if tp == constdef.TypeItem {
+		for t := range constdef.ItemTypes {
+			tps = append(tps, t)
 		}
+	} else {
+		tps = []string{tp}
 	}
 
+	res := make([]*VO, 0)
+	for _, tp := range tps {
+		for _, modId := range i.modIds {
+			r := i.ModIdIndex(modId, tp, id, lang)
+			if r != nil {
+				res = append(res, r...)
+			}
+		}
+	}
 	return res
 }
 
@@ -242,6 +254,30 @@ func (i *MemIndexer) ModIdIndex(mod, tp, id, lang string) []*VO {
 		if idMap, has := idx.idIndex[tp]; has {
 			if items, has := idMap[id]; has {
 				res = append(res, items...)
+			}
+		}
+	}
+
+	return res
+}
+
+func (i *MemIndexer) TypeIndex(tp, lang string) []*VO {
+	var tps []string
+	if tp == constdef.TypeItem {
+		for t := range constdef.ItemTypes {
+			tps = append(tps, t)
+		}
+	} else {
+		tps = []string{tp}
+	}
+
+	res := make([]*VO, 0)
+	if modIdx, has := i.i18nIndexes[lang]; has {
+		for _, t := range tps {
+			for _, idx := range modIdx {
+				for _, vo := range idx.idIndex[t] {
+					res = append(res, vo...)
+				}
 			}
 		}
 	}

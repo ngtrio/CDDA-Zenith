@@ -28,14 +28,15 @@
 
 
             <small>
+                <hr/>
                 {{/* TODO add new type, step 3 */}}
                 {{if eq $item.Type "MONSTER"}}
                     {{template "monster" genMap "vo" $item "po" $po}}
-                {{else}}
-
+                {{else if isItem $item.Type}}
+                    {{template "item" genMap "vo" $item "po" $po}}
+                {{else if eq $item.Type "recipe"}}
+                    {{template "recipe" genMap "vo" $item "po" $po}}
                 {{end}}
-
-                <hr/>
             </small>
         {{end}}
     </div>

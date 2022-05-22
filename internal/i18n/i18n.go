@@ -1,7 +1,7 @@
 package i18n
 
 import (
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"zenith/pkg/jsonutil"
 
 	"github.com/leonelquinteros/gotext"
@@ -24,8 +24,6 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 			} else if strSp, has = jsonutil.GetString("str_sp", raw, ""); has {
 				str = strSp
 				strPl = strSp
-			} else {
-				log.Debugf("name format is invalid: %s", raw.String())
 			}
 
 			if ctxt != "" {
@@ -53,9 +51,15 @@ func TranString(raw string, mo *gotext.Mo) string {
 	return mo.Get(raw)
 }
 
-func TranCustom(raw string, po *gotext.Po) string {
+func TranCustom(raw string, po *gotext.Po, args ...any) string {
 	if len(raw) == 0 || po == nil {
 		return raw
 	}
-	return po.Get(raw)
+
+	td := po.Get(raw)
+	if len(args) > 0 {
+		return fmt.Sprintf(td, args...)
+	}
+
+	return td
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/tidwall/gjson"
 	"html/template"
 	"io"
+	"zenith/internal/constdef"
 	"zenith/internal/core"
 	"zenith/internal/i18n"
 )
@@ -26,6 +27,7 @@ func NewTemplate() *Template {
 			"html":         Html,
 			"getJsonField": GetJsonField,
 			"json":         Json,
+			"isItem":       IsItem,
 		}).ParseGlob("web/template/*.html")),
 	}
 
@@ -68,8 +70,8 @@ func GenMap(p ...any) (map[string]any, error) {
 	return m, nil
 }
 
-func TranUI(word string, po *gotext.Po) string {
-	return i18n.TranCustom(word, po)
+func TranUI(word string, po *gotext.Po, args ...any) template.HTML {
+	return template.HTML(i18n.TranCustom(word, po, args...))
 }
 
 func Html(str string) template.HTML {
@@ -82,4 +84,8 @@ func GetJsonField(json *gjson.Result, field string) string {
 func Json(data any) string {
 	bytes, _ := json.Marshal(data)
 	return string(bytes)
+}
+
+func IsItem(tp string) bool {
+	return constdef.ItemTypes[tp]
 }

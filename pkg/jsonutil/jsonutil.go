@@ -1,6 +1,7 @@
 package jsonutil
 
 import (
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -57,4 +58,9 @@ func GetField(field string, json *gjson.Result) (*gjson.Result, bool) {
 
 func IsString(json *gjson.Result) bool {
 	return json.Type == gjson.String
+}
+
+func ToJson(s any) string {
+	bytes, _ := json.Marshal(s)
+	return string(bytes)
 }
