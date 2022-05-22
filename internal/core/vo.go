@@ -85,16 +85,44 @@ type Effect struct {
 }
 
 type Item struct {
-	baseType
 	baseItem
-	Replace string `json:"replace"`
+
+	// migration
+	Replace string `json:"replace,omitempty"`
+
+	// common
+	Price any `json:"price"` // int or string
+
+	// melee
+	Cutting float32 `json:"cutting,omitempty"`
+	Bashing float32 `json:"bashing,omitempty"`
+	ToHit   any     `json:"to_hit,omitempty"` // int or obj
+
+	// gun
+	Range      float32        `json:"range,omitempty"`
+	Ranging    []*rangeDamage `json:"ranging,omitempty"`
+	Dispersion float32        `json:"dispersion,omitempty"`
+	Recoil     float32        `json:"recoil,omitempty"`
+	Reload     int64          `json:"reload,omitempty"` // time in turns
+}
+
+type rangeDamage struct {
+	DamageType string `json:"damage_type"`
+	Amount     int64  `json:"amount"`
+}
+
+// https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON_INFO.md#to-hit-object
+type toHit struct {
+	Grip    string `json:"grip"`    // one of "bad", "none", "solid", or "weapon"
+	Length  string `json:"length"`  // one of "hand", "short", or "long"
+	Surface string `json:"surface"` // one of "point", "line", "any", or "every"
+	Balance string `json:"balance"` // one of "clumsy", "uneven", "neutral", or "good"
 }
 
 type baseItem struct {
-	Price     int64             `json:"price"`
-	Qualities []quality         `json:"qualities"`
-	CraftFrom map[string][]item `json:"craft_from"`
-	UnCraftTo map[string][]item `json:"un_craft_to"`
+	Qualities []quality `json:"-"`
+	Recipes   []*VO     `json:"-"`
+	UnCrafts  []*VO     `json:"-"`
 }
 
 type sub struct {
@@ -172,8 +200,6 @@ func (m *VO) Bind(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 		m.bindRequirement(raw, langPack, mod, game)
 	case constdef.ItemTypes[tp]:
 		m.bindItem(raw, langPack, mod, game)
-	default:
-		log.Debugf("type %v is not supported yet", tp)
 	}
 }
 
@@ -547,11 +573,13 @@ func (m *VO) postBindRecipeAndUnCraft(game *Game, langPack LangPack) {
 
 func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	m.Item = new(Item)
-	m.Item.CraftFrom = make(map[string][]item)
-	m.Item.UnCraftTo = make(map[string][]item)
+
+	if err := json.Unmarshal([]byte(raw.String()), m.Item); err != nil {
+		log.Errorf("json unmarshall error: %v, id: %v", err, getId(raw))
+		return
+	}
 
 	if m.Type == constdef.TypeMigration {
-		m.Item.Replace, _ = jsonutil.GetString("replace", raw, "")
 		return
 	}
 
@@ -562,39 +590,30 @@ func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game
 		}
 	}
 
-	// price
-	m.Item.Price, _ = jsonutil.GetInt("price", raw, 0)
-
 	// qualities
 	m.Item.Qualities = m.loadQualities(raw, langPack, mod, game)
 
-	// craft_from
-	recipes := game.Indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)
-	for _, recipe := range recipes {
-		modName := recipe.ModName
-		m.Item.CraftFrom[modName] = append(m.Item.CraftFrom[modName], item{
-			sub: sub{
-				ModId: modName,
-				Id:    recipe.Id,
-				Name:  recipe.Name,
-				SType: recipe.Type,
-			},
-		})
+	// range_damage
+	if rd := raw.Get("ranged_damage"); rd.Exists() {
+		if rd.IsObject() {
+			temp := new(rangeDamage)
+			_ = json.Unmarshal([]byte(rd.String()), &temp)
+			m.Item.Ranging = append(m.Item.Ranging, temp)
+		} else {
+			_ = json.Unmarshal([]byte(rd.String()), &m.Item.Ranging)
+		}
+		for _, r := range m.Item.Ranging {
+			r.DamageType = i18n.TranString(r.DamageType, langPack.Mo)
+		}
 	}
+}
 
-	// un_craft_to
-	uncrafts := game.Indexer.IdIndex(constdef.TypeUnCraft, m.Id, langPack.Lang)
-	for _, uncraft := range uncrafts {
-		modName := uncraft.ModName
-		m.Item.CraftFrom[modName] = append(m.Item.UnCraftTo[modName], item{
-			sub: sub{
-				ModId: modName,
-				Id:    uncraft.Id,
-				Name:  uncraft.Name,
-				SType: uncraft.Type,
-			},
-		})
-	}
+func (m *VO) postBindItem(game *Game, langPack LangPack) {
+	// recipes
+	m.Item.Recipes = append(m.Item.Recipes, game.Indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)...)
+
+	// un_craft
+	m.Item.UnCrafts = append(m.Item.UnCrafts, game.Indexer.IdIndex(constdef.TypeUnCraft, m.Id, langPack.Lang)...)
 }
 
 func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) []quality {

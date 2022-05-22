@@ -91,4 +91,13 @@
             <span>{{tranUI "None" $po}}</span>
         {{end}}
     </ol>
+
+    {{if .FlagsDesc}}
+        <div>{{tranUI "Flags" $po}}:</div>
+        <ul>
+            {{range $d := .vo.FlagsDesc}}
+                <li>{{html $d}}</li>
+            {{end}}
+        </ul>
+    {{end}}
 {{end}}

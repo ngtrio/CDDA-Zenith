@@ -19,6 +19,42 @@ msgstr "特殊攻击"
 msgid "Updated at"
 msgstr "更新于"
 
+msgid "Range"
+msgstr "远程"
+
+msgid "Melee"
+msgstr "近战"
+
+msgid "Range"
+msgstr "远程"
+
+msgid "Bashing"
+msgstr "钝击"
+
+msgid "Cutting"
+msgstr "斩击"
+
+msgid "To hit"
+msgstr "命中"
+
+msgid "Ranging"
+msgstr "远程伤害"
+
+msgid "RangeAmount"
+msgstr "射程"
+
+msgid "Properties"
+msgstr "属性"
+
+msgid "Uncraft"
+msgstr "拆解"
+
+msgid "Reload"
+msgstr "装填速度"
+
+msgid "Dispersion"
+msgstr "散布"
+
 msgid "Next page"
 msgstr "下一页"
 
@@ -66,6 +102,9 @@ msgstr "单位"
 
 msgid "Components required"
 msgstr "需要材料"
+
+msgid "Components returned"
+msgstr "获取材料"
 
 msgid "or"
 msgstr "或"

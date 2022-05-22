@@ -20,7 +20,7 @@
         </hgroup>
 
 
-        <div class="grid" style="margin-left: 1%">
+        <div style="margin-left: 1%">
             <div>
                 {{if eq .Path "/list"}}
                     {{$cur_page := .Data.CurPage}}
@@ -43,8 +43,6 @@
                        role="button" {{$next_disable}}>{{tranUI "Next page" $po}}</a>
                     <a href="/list?type=MONSTER&num=20&page=1" id="type-button"
                        role="button">{{tranUI "MONSTER" $po}}</a>
-                    <a href="/list?type=recipe&num=20&page=1" id="type-button"
-                       role="button">{{tranUI "recipe" $po}}</a>
                     <a href="/list?type=COMESTIBLE&num=20&page=1" id="type-button"
                        role="button">{{tranUI "COMESTIBLE" $po}}</a>
                     <a href="/list?type=ARMOR&num=20&page=1" id="type-button"
@@ -55,22 +53,22 @@
                        role="button">{{tranUI "AMMO" $po}}</a>
                     <a href="/list?type=TOOL&num=20&page=1" id="type-button"
                        role="button">{{tranUI "TOOL" $po}}</a>
+                    <select id="z-select">
+                        <option value="MONSTER" selected>{{tranUI "MONSTER" $po}}</option>
+                        <option value="AMMO">{{tranUI "AMMO" $po}}</option>
+                        <option value="GUN">{{tranUI "GUN" $po}}</option>
+                        <option value="ARMOR">{{tranUI "ARMOR" $po}}</option>
+                        <option value="COMESTIBLE">{{tranUI "COMESTIBLE" $po}}</option>
+                        <option value="TOOL">{{tranUI "TOOL" $po}}</option>
+                    </select>
+                    <input name="keyword" type="text" id="z-input">
+                    <button type="submit" role="button" id="type-button" onclick="search()" style="width: 60px">
+                        {{tranUI "Search" $po}}
+                    </button>
                 {{end}}
             </div>
-            <div style="width: fit-content; margin: 0; right: 1%; position: fixed">
-                <button type="submit" role="button" id="type-button" onclick="search()" style="width: 60px">
-                    {{tranUI "Search" $po}}
-                </button>
-                <select id="z-select">
-                    <option value="MONSTER" selected>{{tranUI "MONSTER" $po}}</option>
-                    <option value="recipe">{{tranUI "recipe" $po}}</option>
-                    <option value="AMMO">{{tranUI "AMMO" $po}}</option>
-                    <option value="GUN">{{tranUI "GUN" $po}}</option>
-                    <option value="ARMOR">{{tranUI "ARMOR" $po}}</option>
-                    <option value="COMESTIBLE">{{tranUI "COMESTIBLE" $po}}</option>
-                    <option value="TOOL">{{tranUI "TOOL" $po}}</option>
-                </select>
-                <input name="keyword" type="text" id="z-input">
+            <div style="width: fit-content">
+
             </div>
         </div>
     </div>

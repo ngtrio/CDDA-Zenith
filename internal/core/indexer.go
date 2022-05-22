@@ -262,11 +262,22 @@ func (i *MemIndexer) ModIdIndex(mod, tp, id, lang string) []*VO {
 }
 
 func (i *MemIndexer) TypeIndex(tp, lang string) []*VO {
+	var tps []string
+	if tp == constdef.TypeItem {
+		for t := range constdef.ItemTypes {
+			tps = append(tps, t)
+		}
+	} else {
+		tps = []string{tp}
+	}
+
 	res := make([]*VO, 0)
 	if modIdx, has := i.i18nIndexes[lang]; has {
-		for _, idx := range modIdx {
-			for _, vo := range idx.idIndex[tp] {
-				res = append(res, vo...)
+		for _, t := range tps {
+			for _, idx := range modIdx {
+				for _, vo := range idx.idIndex[t] {
+					res = append(res, vo...)
+				}
 			}
 		}
 	}

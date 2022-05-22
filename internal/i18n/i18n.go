@@ -2,7 +2,6 @@ package i18n
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"zenith/pkg/jsonutil"
 
 	"github.com/leonelquinteros/gotext"
@@ -25,8 +24,6 @@ func Tran(field string, json *gjson.Result, mo *gotext.Mo) string {
 			} else if strSp, has = jsonutil.GetString("str_sp", raw, ""); has {
 				str = strSp
 				strPl = strSp
-			} else {
-				log.Debugf("name format is invalid: %s", raw.String())
 			}
 
 			if ctxt != "" {

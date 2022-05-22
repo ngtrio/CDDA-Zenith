@@ -37,17 +37,6 @@
                 {{else if eq $item.Type "recipe"}}
                     {{template "recipe" genMap "vo" $item "po" $po}}
                 {{end}}
-
-                <hr/>
-
-                {{if $item.FlagsDesc}}
-                    <div>{{tranUI "Flags" $po}}:</div>
-                    <ul>
-                        {{range $d := $item.FlagsDesc}}
-                            <li>{{html $d}}</li>
-                        {{end}}
-                    </ul>
-                {{end}}
             </small>
         {{end}}
     </div>

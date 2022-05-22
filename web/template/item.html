@@ -1,30 +1,114 @@
 {{define "item"}}
 
     {{$po := .po}}
+    {{$item := .vo.Item}}
 
     <div class="grid">
-        <div>{{tranUI "Material" $po}}:
-            {{range $m := .vo.Material}}
-                {{$m}}
+        <div>
+            <h5>{{tranUI "Properties" $po}}</h5>
+            <div class="grid">
+                <div>{{tranUI "Material" $po}}:
+                    {{range $m := .vo.Material}}
+                        {{$m}}
+                    {{end}}
+                </div>
+                <div>{{tranUI "Weight" $po}}: {{.vo.Weight}}</div>
+                <div>{{tranUI "Volume" $po}}: {{.vo.Volume}}</div>
+                <div>{{tranUI "Price" $po}}: {{$item.Price}}</div>
+                <div></div>
+                <div></div>
+            </div>
+            <hr/>
+
+            {{if or $item.Cutting $item.Bashing $item.ToHit}}
+                <b>{{tranUI "Melee" $po}}</b>
+                <div>
+                    {{if $item.Cutting }}
+                        {{tranUI "Cutting" $po}}: {{$item.Cutting}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.Bashing}}
+                        {{tranUI "Bashing" $po}}: {{$item.Bashing}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.ToHit}}
+                        {{tranUI "To hit" $po}}: {{$item.ToHit}}
+                    {{end}}
+                </div>
+                <hr/>
+            {{end}}
+
+            {{if or $item.Range $item.Ranging $item.Dispersion $item.Reload $item.Recoil}}
+                <b>{{tranUI "Range" $po}}</b>
+                <div>
+                    {{if $item.Range}}
+                        {{tranUI "RangeAmount" $po}}: {{$item.Range}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.Dispersion}}
+                        {{tranUI "Dispersion" $po}}: {{$item.Dispersion}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.Reload}}
+                        {{tranUI "Reload" $po}}: {{$item.Reload}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.Recoil}}
+                        {{tranUI "Recoil" $po}}: {{$item.Recoil}}
+                    {{end}}
+                </div>
+                <div>
+                    {{if $item.Ranging}}
+                        <div>{{tranUI "Ranging" $po}}:</div>
+                        {{range $d := $item.Ranging}}
+                            - {{$d.DamageType}}({{$d.Amount}})
+                        {{end}}
+                    {{end}}
+                </div>
+                <hr/>
+            {{end}}
+
+
+            {{if  $item.Qualities}}
+                <div>
+                    {{tranUI "Function" $po}}:
+                </div>
+                {{range $q := $item.Qualities}}
+                    <div>
+                        >
+                        <blue>{{$q.Name}}</blue>
+                        - {{$q.Level}} {{tranUI "level" $po}}
+                    </div>
+                {{end}}
+            {{end}}
+
+            {{if .vo.FlagsDesc}}
+                <div>{{tranUI "Flags" $po}}:</div>
+                <ul>
+                    {{range $d := .vo.FlagsDesc}}
+                        <li>{{html $d}}</li>
+                    {{end}}
+                </ul>
             {{end}}
         </div>
-        <div>{{tranUI "Weight" $po}}: {{.vo.Weight}}</div>
-        <div>{{tranUI "Volume" $po}}: {{.vo.Volume}}</div>
-        <div>{{tranUI "Price" $po}}: {{.vo.Item.Price}}</div>
-        <div></div>
-        <div></div>
-    </div>
 
-    <hr/>
+        {{if $item.Recipes}}
+            <div>
+                <h5>{{tranUI "recipe" $po}}</h5>
+                {{template "recipe" .}}
+            </div>
+        {{end}}
 
-    <div>
-        {{tranUI "Function" $po}}:
+        {{if $item.UnCrafts}}
+            <div>
+                <h5>{{tranUI "Uncraft" $po}}</h5>
+                {{template "uncraft" .}}
+            </div>
+        {{end}}
     </div>
-    {{range $q := .vo.Item.Qualities}}
-        <div>
-            >
-            <blue>{{$q.Name}}</blue>
-            - {{$q.Level}} {{tranUI "level" $po}}
-        </div>
-    {{end}}
 {{end}}

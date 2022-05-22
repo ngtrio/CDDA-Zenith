@@ -141,12 +141,13 @@ func (game *Game) doLoad(mod *Mod) {
 		for _, json := range jsons {
 			id := getId(json)
 			tp := getType(json)
-			if id == "" {
-				log.Debugf("id not found, tp: %s", tp)
+
+			if !isInAllowList(tp) {
 				continue
 			}
 
-			if !isInAllowList(tp) {
+			if id == "" {
+				log.Debugf("id not found, tp: %s", tp)
 				continue
 			}
 
@@ -205,6 +206,10 @@ func (game *Game) postProcess() {
 
 		for _, vo := range game.Indexer.TypeIndex(constdef.TypeUnCraft, lang.Lang) {
 			vo.postBindRecipeAndUnCraft(game, lang)
+		}
+
+		for _, vo := range game.Indexer.TypeIndex(constdef.TypeItem, lang.Lang) {
+			vo.postBindItem(game, lang)
 		}
 	}
 

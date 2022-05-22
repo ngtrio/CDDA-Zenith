@@ -1,7 +1,7 @@
-{{define "recipe"}}
+{{define "uncraft"}}
 
     {{$po := .po}}
-    {{$res := .vo.Item.Recipes}}
+    {{$res := .vo.Item.UnCrafts}}
 
     {{range $revo := $res}}
         {{$re := $revo.Recipe}}
@@ -51,7 +51,7 @@
         <hr/>
 
         <div>
-            {{tranUI "Components required" $po}}:
+            {{tranUI "Components returned" $po}}:
 
             {{range $components := $re.Components}}
                 <div>
