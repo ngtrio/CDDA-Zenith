@@ -121,10 +121,13 @@ type Requirement struct {
 }
 
 type Recipe struct {
-	Components [][]item  `json:"components"`
-	Tools      [][]item  `json:"tools"`
-	Qualities  []quality `json:"qualities"`
-	Using      []item    `json:"using"`
+	SkillUsed      string    `json:"skill_used"`
+	Difficulty     string    `json:"difficulty"`
+	SkillsRequired string    `json:"skills_required"`
+	Components     [][]item  `json:"components"`
+	Tools          [][]item  `json:"tools"`
+	Qualities      []quality `json:"qualities"`
+	Using          []item    `json:"using"`
 }
 
 type VO struct {
@@ -230,7 +233,7 @@ func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack, mod *Mod, game *Ga
 
 	m.Name = i18n.Tran("name", raw, langPack.Mo)
 	if m.Name == "" {
-		m.Name = i18n.TranCustom(m.Id, langPack.Po)
+		m.Name = i18n.TranString(m.Id, langPack.Mo)
 	}
 
 	m.Description = i18n.Tran("description", raw, langPack.Mo)
@@ -474,6 +477,27 @@ func (m *VO) postBindRecipeAndUnCraft(game *Game, langPack LangPack) {
 
 	for idx, tool := range m.Recipe.Tools {
 		m.Recipe.Tools[idx] = util.Set(tool)
+		var newTools []item
+		for _, t := range m.Recipe.Tools[idx] {
+			newTools = append(newTools, t)
+			toolId := t.Id
+			subTools := game.ToolSub[toolId]
+			for _, stId := range subTools {
+				for _, st := range game.Indexer.IdIndex(constdef.TypeTool, stId, langPack.Lang) {
+					it := item{
+						sub: sub{
+							ModId: st.ModId,
+							Id:    st.Id,
+							Name:  st.Name,
+							SType: st.Type,
+						},
+						Num: t.Num,
+					}
+					newTools = append(newTools, it)
+				}
+			}
+		}
+		m.Recipe.Tools[idx] = newTools
 	}
 
 	for idx, component := range m.Recipe.Components {
@@ -483,10 +507,19 @@ func (m *VO) postBindRecipeAndUnCraft(game *Game, langPack LangPack) {
 
 func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) {
 	m.Item = new(Item)
+	m.Item.CraftFrom = make(map[string][]item)
+	m.Item.UnCraftTo = make(map[string][]item)
 
 	if m.Type == constdef.TypeMigration {
 		m.Item.Replace, _ = jsonutil.GetString("replace", raw, "")
 		return
+	}
+
+	if m.Type == constdef.TypeTool {
+		subTool, _ := jsonutil.GetString("sub", raw, "")
+		if subTool != "" {
+			game.ToolSub[subTool] = append(game.ToolSub[subTool], m.Id)
+		}
 	}
 
 	// price
@@ -496,14 +529,32 @@ func (m *VO) bindItem(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game
 	m.Item.Qualities = m.loadQualities(raw, langPack, mod, game)
 
 	// craft_from
-	//recipes := indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)
-	//for _, recipe := range recipes {
-	//	modName := recipe.ModName
-	//
-	//}
+	recipes := game.Indexer.IdIndex(constdef.TypeRecipe, m.Id, langPack.Lang)
+	for _, recipe := range recipes {
+		modName := recipe.ModName
+		m.Item.CraftFrom[modName] = append(m.Item.CraftFrom[modName], item{
+			sub: sub{
+				ModId: modName,
+				Id:    recipe.Id,
+				Name:  recipe.Name,
+				SType: recipe.Type,
+			},
+		})
+	}
 
 	// un_craft_to
-
+	uncrafts := game.Indexer.IdIndex(constdef.TypeUnCraft, m.Id, langPack.Lang)
+	for _, uncraft := range uncrafts {
+		modName := uncraft.ModName
+		m.Item.CraftFrom[modName] = append(m.Item.UnCraftTo[modName], item{
+			sub: sub{
+				ModId: modName,
+				Id:    uncraft.Id,
+				Name:  uncraft.Name,
+				SType: uncraft.Type,
+			},
+		})
+	}
 }
 
 func (m *VO) loadQualities(raw *gjson.Result, langPack LangPack, mod *Mod, game *Game) []quality {

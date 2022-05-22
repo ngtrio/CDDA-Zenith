@@ -32,6 +32,7 @@ type Game struct {
 	ModPath   string
 	LangPacks map[string]LangPack
 	Indexer   Indexer
+	ToolSub   map[string][]string
 }
 
 type LangPack struct {

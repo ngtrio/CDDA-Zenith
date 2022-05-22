@@ -15,12 +15,11 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
-	mw "zenith/internal/middleware"
-	"zenith/internal/view"
-
 	"zenith/internal/config"
 	"zenith/internal/core"
 	"zenith/internal/data"
+	mw "zenith/internal/middleware"
+	"zenith/internal/view"
 
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -161,6 +160,7 @@ func loadData(version string) {
 		Mods:      make(map[string]*core.Mod),
 		ModPath:   config.BaseDir + "/data/mods",
 		LangPacks: make(map[string]core.LangPack),
+		ToolSub:   make(map[string][]string),
 	}
 	g.Load(map[string]bool{})
 	g.UpdateAt = time.Now().Format("2006-01-02 15:04:05.000 -07")
