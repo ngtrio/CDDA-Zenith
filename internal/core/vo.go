@@ -122,12 +122,17 @@ type Requirement struct {
 
 type Recipe struct {
 	SkillUsed      string    `json:"skill_used"`
-	Difficulty     string    `json:"difficulty"`
-	SkillsRequired string    `json:"skills_required"`
+	Difficulty     int64     `json:"difficulty"`
+	SkillsRequired []skill   `json:"skills_required"`
 	Components     [][]item  `json:"components"`
 	Tools          [][]item  `json:"tools"`
 	Qualities      []quality `json:"qualities"`
 	Using          []item    `json:"using"`
+}
+
+type skill struct {
+	Name  string `json:"name"`
+	Level int64  `json:"level"`
 }
 
 type VO struct {
@@ -233,7 +238,7 @@ func (m *VO) bindCommon(raw *gjson.Result, langPack LangPack, mod *Mod, game *Ga
 
 	m.Name = i18n.Tran("name", raw, langPack.Mo)
 	if m.Name == "" {
-		m.Name = i18n.TranString(m.Id, langPack.Mo)
+		m.Name = i18n.TranCustom(m.Id, langPack.Po)
 	}
 
 	m.Description = i18n.Tran("description", raw, langPack.Mo)
@@ -460,8 +465,43 @@ func (m *VO) preBindRecipeAndUnCraft(raw *gjson.Result, langPack LangPack, mod *
 	m.Recipe.Components = m.preLoadItems(raw, "components")
 	m.Recipe.Qualities = m.loadQualities(raw, langPack, mod, game)
 	m.Recipe.Using = m.preLoadUsing(raw)
+	su, _ := jsonutil.GetString("skill_used", raw, "")
+	m.Recipe.SkillUsed = getSkillName(su, langPack, game)
+	m.Recipe.Difficulty, _ = jsonutil.GetInt("difficulty", raw, 0)
+	res := game.Indexer.IdIndex(constdef.TypeItem, m.Id, langPack.Lang)
+	if len(res) > 0 {
+		m.Name = res[0].Name
+	}
+
+	sr, _ := jsonutil.GetArray("skills_required", raw, []gjson.Result{})
+	var skills []skill
+	if len(sr) > 0 {
+		if sr[0].IsArray() {
+			for _, s := range sr {
+				skills = append(skills, skill{
+					Name:  getSkillName(s.Array()[0].String(), langPack, game),
+					Level: s.Array()[1].Int(),
+				})
+			}
+		} else {
+			skills = append(skills, skill{
+				Name:  getSkillName(sr[0].String(), langPack, game),
+				Level: sr[1].Int(),
+			})
+		}
+	}
+	m.Recipe.SkillsRequired = skills
 
 	return
+}
+
+func getSkillName(skillId string, langPack LangPack, game *Game) string {
+	sk := game.Indexer.IdIndex(constdef.TypeSkill, skillId, langPack.Lang)
+	if len(sk) > 0 {
+		return sk[0].Name
+	}
+
+	return skillId
 }
 
 func (m *VO) postBindRecipeAndUnCraft(game *Game, langPack LangPack) {

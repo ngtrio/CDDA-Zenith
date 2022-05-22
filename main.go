@@ -15,11 +15,12 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	mw "zenith/internal/middleware"
+	"zenith/internal/view"
+
 	"zenith/internal/config"
 	"zenith/internal/core"
 	"zenith/internal/data"
-	mw "zenith/internal/middleware"
-	"zenith/internal/view"
 
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"

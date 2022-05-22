@@ -3,6 +3,18 @@
     {{$po := .po}}
 
     <div class="grid">
+        <div>{{tranUI "Material" $po}}:
+            {{range $m := .vo.Material}}
+                {{$m}}
+            {{end}}
+        </div>
+        <div>{{tranUI "Weight" $po}}: {{.vo.Weight}}</div>
+        <div>{{tranUI "Volume" $po}}: {{.vo.Volume}}</div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div class="grid">
         <div>{{tranUI "Attack" $po}}: {{.vo.Monster.Attack}}</div>
         <div>{{tranUI "Attack cost" $po}}: {{.vo.Monster.AttackCost}}</div>
         <div></div>

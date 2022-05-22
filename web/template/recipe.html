@@ -1,0 +1,68 @@
+{{define "recipe"}}
+
+    {{$po := .po}}
+    {{$re := .vo.Recipe}}
+    <div>
+        {{tranUI "Skill used" $po}}:
+        <blue>{{$re.SkillUsed}}</blue>
+        <yellow>({{$re.Difficulty}})</yellow>
+    </div>
+
+    <div>
+        {{tranUI "Skills required" $po}}:
+        {{range $sr := $re.SkillsRequired}}
+            <blue>{{$sr.Name}}</blue>
+            <yellow>({{$sr.Level}})</yellow>
+        {{end}}
+    </div>
+
+    <hr/>
+
+    <div>
+        {{tranUI "Tools required" $po}}:
+        {{range $quality := $re.Qualities}}
+            <div>
+                > {{tranUI "A %v level %v tool" $po $quality.Level $quality.Name}}
+            </div>
+        {{end}}
+
+        {{range $tools := $re.Tools}}
+            <div>
+                >
+                {{$flag := true}}
+                {{range $idx, $toolAlt := $tools}}
+                    {{if $flag}}
+                        {{$flag = false}}
+                    {{else}}
+                        {{tranUI "or" $po}}
+                    {{end}}
+                    <blue>{{$toolAlt.Name}}</blue>
+                    {{if gt $toolAlt.Num -1}}
+                        ({{$toolAlt.Num}} {{tranUI "unit" $po}})
+                    {{end}}
+                {{end}}
+            </div>
+        {{end}}
+    </div>
+
+    <hr/>
+
+    <div>
+        {{tranUI "Components required" $po}}:
+
+        {{range $components := $re.Components}}
+            <div>
+                >
+                {{$flag := true}}
+                {{range $idx, $compAlt := $components}}
+                    {{if $flag}}
+                        {{$flag = false}}
+                    {{else}}
+                        {{tranUI "or" $po}}
+                    {{end}}
+                    <blue>{{$compAlt.Name}}</blue> x {{$compAlt.Num}}
+                {{end}}
+            </div>
+        {{end}}
+    </div>
+{{end}}

@@ -2,11 +2,29 @@
 
     {{$po := .po}}
 
-    <ul>
-        {{range $q := .vo.Item.Qualities}}
-            <li>
-                <yellow>{{$q.Name}}</yellow> - {{$q.Level}} {{tranUI "level" $po}}
-            </li>
-        {{end}}
-    </ul>
+    <div class="grid">
+        <div>{{tranUI "Material" $po}}:
+            {{range $m := .vo.Material}}
+                {{$m}}
+            {{end}}
+        </div>
+        <div>{{tranUI "Weight" $po}}: {{.vo.Weight}}</div>
+        <div>{{tranUI "Volume" $po}}: {{.vo.Volume}}</div>
+        <div>{{tranUI "Price" $po}}: {{.vo.Item.Price}}</div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <hr/>
+
+    <div>
+        {{tranUI "Function" $po}}:
+    </div>
+    {{range $q := .vo.Item.Qualities}}
+        <div>
+            >
+            <blue>{{$q.Name}}</blue>
+            - {{$q.Level}} {{tranUI "level" $po}}
+        </div>
+    {{end}}
 {{end}}

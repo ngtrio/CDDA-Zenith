@@ -28,49 +28,26 @@
 
 
             <small>
-                <div class="grid">
-                    <div>{{tranUI "Material" $po}}:
-                        {{range $m := $item.Material}}
-                            {{$m}}
-                        {{end}}
-                    </div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                </div>
-
-                <div class="grid">
-                    <div>{{tranUI "Weight" $po}}: {{$item.Weight}}</div>
-                    <div>{{tranUI "Volume" $po}}: {{$item.Volume}}</div>
-                    {{if $item.Price}}
-                        <div>{{tranUI "Price" $po}}: {{$item.Price}}$</div>
-                    {{else}}
-                        <div></div>
-                    {{end}}
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                </div>
-
-
                 <hr/>
                 {{/* TODO add new type, step 3 */}}
                 {{if eq $item.Type "MONSTER"}}
                     {{template "monster" genMap "vo" $item "po" $po}}
                 {{else if isItem $item.Type}}
                     {{template "item" genMap "vo" $item "po" $po}}
+                {{else if eq $item.Type "recipe"}}
+                    {{template "recipe" genMap "vo" $item "po" $po}}
                 {{end}}
 
                 <hr/>
 
-                <div>{{tranUI "Flags" $po}}:</div>
-                <ul>
-                    {{range $d := $item.FlagsDesc}}
-                        <li>{{html $d}}</li>
-                    {{end}}
-                </ul>
+                {{if $item.FlagsDesc}}
+                    <div>{{tranUI "Flags" $po}}:</div>
+                    <ul>
+                        {{range $d := $item.FlagsDesc}}
+                            <li>{{html $d}}</li>
+                        {{end}}
+                    </ul>
+                {{end}}
             </small>
         {{end}}
     </div>

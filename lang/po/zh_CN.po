@@ -28,6 +28,48 @@ msgstr "上一页"
 msgid "MONSTER"
 msgstr "怪物"
 
+msgid "recipe"
+msgstr "配方"
+
+msgid "Function"
+msgstr "功能"
+
+msgid "TOOL"
+msgstr "工具"
+
+msgid "ARMOR"
+msgstr "装备"
+
+msgid "AMMO"
+msgstr "弹药"
+
+msgid "GUN"
+msgstr "枪械"
+
+msgid "COMESTIBLE"
+msgstr "消耗品"
+
+msgid "Skill used"
+msgstr "主要技能"
+
+msgid "Skills required"
+msgstr "其他技能"
+
+msgid "Tools required"
+msgstr "需要工具"
+
+msgid "A %v level %v tool"
+msgstr "1 个 <blue>%v 级 %v</blue> 工具"
+
+msgid "unit"
+msgstr "单位"
+
+msgid "Components required"
+msgstr "需要材料"
+
+msgid "or"
+msgstr "或"
+
 msgid "Search"
 msgstr "搜索"
 

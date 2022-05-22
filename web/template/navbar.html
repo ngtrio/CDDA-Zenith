@@ -43,14 +43,32 @@
                        role="button" {{$next_disable}}>{{tranUI "Next page" $po}}</a>
                     <a href="/list?type=MONSTER&num=20&page=1" id="type-button"
                        role="button">{{tranUI "MONSTER" $po}}</a>
+                    <a href="/list?type=recipe&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "recipe" $po}}</a>
+                    <a href="/list?type=COMESTIBLE&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "COMESTIBLE" $po}}</a>
+                    <a href="/list?type=ARMOR&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "ARMOR" $po}}</a>
+                    <a href="/list?type=GUN&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "GUN" $po}}</a>
+                    <a href="/list?type=AMMO&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "AMMO" $po}}</a>
+                    <a href="/list?type=TOOL&num=20&page=1" id="type-button"
+                       role="button">{{tranUI "TOOL" $po}}</a>
                 {{end}}
             </div>
-            <div style="width: fit-content; margin: 0; display: inline-block; right: 1%; position: fixed">
+            <div style="width: fit-content; margin: 0; right: 1%; position: fixed">
                 <button type="submit" role="button" id="type-button" onclick="search()" style="width: 60px">
                     {{tranUI "Search" $po}}
                 </button>
                 <select id="z-select">
                     <option value="MONSTER" selected>{{tranUI "MONSTER" $po}}</option>
+                    <option value="recipe">{{tranUI "recipe" $po}}</option>
+                    <option value="AMMO">{{tranUI "AMMO" $po}}</option>
+                    <option value="GUN">{{tranUI "GUN" $po}}</option>
+                    <option value="ARMOR">{{tranUI "ARMOR" $po}}</option>
+                    <option value="COMESTIBLE">{{tranUI "COMESTIBLE" $po}}</option>
+                    <option value="TOOL">{{tranUI "TOOL" $po}}</option>
                 </select>
                 <input name="keyword" type="text" id="z-input">
             </div>

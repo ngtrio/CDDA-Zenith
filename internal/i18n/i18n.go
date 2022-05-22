@@ -1,6 +1,7 @@
 package i18n
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"zenith/pkg/jsonutil"
 
@@ -53,9 +54,15 @@ func TranString(raw string, mo *gotext.Mo) string {
 	return mo.Get(raw)
 }
 
-func TranCustom(raw string, po *gotext.Po) string {
+func TranCustom(raw string, po *gotext.Po, args ...any) string {
 	if len(raw) == 0 || po == nil {
 		return raw
 	}
-	return po.Get(raw)
+
+	td := po.Get(raw)
+	if len(args) > 0 {
+		return fmt.Sprintf(td, args...)
+	}
+
+	return td
 }

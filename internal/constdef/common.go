@@ -32,6 +32,7 @@ var CommonTypes = map[string]bool{
 	TypeRecipe:        true,
 	TypeUnCraft:       true,
 	TypeRequirement:   true,
+	TypeSkill:         true,
 }
 
 var AllowTypeList = util.MergeMap(ItemTypes, CommonTypes)
@@ -61,4 +62,7 @@ const (
 	TypeWheel         = "WHEEL"
 	TypePetArmor      = "PET_ARMOR"
 	TypeMigration     = "MIGRATION"
+	TypeSkill         = "skill"
+
+	TypeItem = "Item"
 )
